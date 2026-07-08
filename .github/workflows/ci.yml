@@ -54,7 +54,7 @@ jobs:
       - name: Install Npcap runtime (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: choco install npcap --version 1.80 -y --no-progress
+        run: choco install npcap -y --no-progress
 
       - uses: dtolnay/rust-toolchain@stable
         with:
