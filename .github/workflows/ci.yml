@@ -51,6 +51,11 @@ jobs:
           Expand-Archive -Path 'npcap-sdk.zip' -DestinationPath 'C:\npcap-sdk'
           Add-Content -Path $env:GITHUB_ENV -Value "LIB=C:\npcap-sdk\Lib\x64"
 
+      - name: Install Npcap runtime (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install npcap --version 1.80 -y --no-progress
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
