@@ -1,0 +1,45 @@
+[package]
+name = "seehandshake"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+authors = ["SeeHandshake contributors"]
+license = "MIT"
+description = "Visualize TLS handshakes in your terminal, in real time."
+readme = "README.md"
+repository = "https://github.com/OWNER/SeeHandshake"
+homepage = "https://github.com/OWNER/SeeHandshake"
+documentation = "https://docs.rs/seehandshake"
+keywords = ["tls", "network", "handshake", "tui", "security"]
+categories = ["command-line-utilities", "network-programming", "visualization"]
+
+[lib]
+name = "seehandshake"
+path = "src/lib.rs"
+
+[[bin]]
+name = "seehandshake"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.6", features = ["derive"] }
+ratatui = "0.30"
+crossterm = "0.29"
+pcap = "2.4"
+etherparse = "0.20"
+tls-parser = "0.12"
+x509-parser = "0.18"
+serde = { version = "1", features = ["derive"] }
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
