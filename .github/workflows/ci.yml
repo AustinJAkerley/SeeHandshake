@@ -54,7 +54,10 @@ jobs:
       - name: Install Npcap runtime (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: choco install npcap -y --no-progress
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri 'https://npcap.com/dist/npcap-1.80.exe' -OutFile 'npcap-installer.exe'
+          Start-Process -FilePath '.\npcap-installer.exe' -ArgumentList '/S' -NoNewWindow -Wait
 
       - uses: dtolnay/rust-toolchain@stable
         with:
