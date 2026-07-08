@@ -51,6 +51,14 @@ jobs:
           Expand-Archive -Path 'npcap-sdk.zip' -DestinationPath 'C:\npcap-sdk'
           Add-Content -Path $env:GITHUB_ENV -Value "LIB=C:\npcap-sdk\Lib\x64"
 
+      - name: Install Npcap runtime (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri 'https://npcap.com/dist/npcap-1.80.exe' -OutFile 'npcap-installer.exe'
+          Start-Process -Wait -FilePath '.\npcap-installer.exe' -ArgumentList '/S'
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
