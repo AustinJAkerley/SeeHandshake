@@ -294,9 +294,11 @@ fn make_arrow(dir: FlowDir, label: &str, width: usize) -> String {
     };
 
     // Insufficient space: truncate label and attach arrowhead(s).
+    // When width <= label.len() + heads, max_label = width - heads <= label.len(),
+    // so the slice is always in-bounds (all stage labels are ASCII).
     if width <= label.len().saturating_add(heads) {
         let max_label = width.saturating_sub(heads);
-        let t = &label[..max_label.min(label.len())];
+        let t = &label[..max_label];
         return match dir {
             FlowDir::Right => format!("{t}►"),
             FlowDir::Left  => format!("◄{t}"),

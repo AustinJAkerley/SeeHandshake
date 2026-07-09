@@ -188,8 +188,18 @@ fn apply_handshake_record(handshake: &mut HandshakeInfo, payload: &[u8], directi
                             merge_server_hello(handshake, extracted);
                         }
                         // TLS 1.2: plaintext server certificate (TLS 1.3 encrypts this).
+                        // If the version is unknown (None) and we can parse a plaintext
+                        // Certificate, it must be pre-1.3.
                         (TlsMessageHandshake::Certificate(_), Direction::ServerToClient) => {
-                            if handshake.tls_version != Some(TlsVersion::Tls13) {
+                            if matches!(
+                                handshake.tls_version,
+                                None | Some(
+                                    TlsVersion::Ssl30
+                                        | TlsVersion::Tls10
+                                        | TlsVersion::Tls11
+                                        | TlsVersion::Tls12
+                                )
+                            ) {
                                 handshake.stage = HandshakeStage::ServerCertificate;
                             }
                         }
