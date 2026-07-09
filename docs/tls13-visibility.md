@@ -5,16 +5,16 @@ possible on the wire. `seehandshake` is a passive observer — it captures
 packets but has no access to session keys — so a large portion of a TLS 1.3
 handshake is opaque to it. This document is honest about what that means.
 
-## The handshake, in order
+## The handshake, in order (diagram steps)
 
-1. **`ClientHello`** — sent by the client, in the clear.
-2. **`ServerHello`** — sent by the server, in the clear.
+1. **`ClientHello`** (① client → server) — sent in the clear.
+2. **`ServerHello`** (② server → client) — sent in the clear.
 3. **`ChangeCipherSpec`** — a legacy marker, in the clear (TLS 1.3 keeps it
    only for middlebox compatibility).
-4. **`EncryptedExtensions`** — encrypted.
-5. **`Certificate`** — encrypted.
-6. **`CertificateVerify`** — encrypted.
-7. **`Finished`** (server, then client) — encrypted.
+4. **`Certificate`** (③ server → client) — an encrypted flight containing
+   `EncryptedExtensions`, `Certificate`, and `CertificateVerify`.
+5. **`ClientFinished`** (④ client → server) — encrypted.
+6. **`ServerFinished`** (⑤ server → client) — encrypted.
 
 Everything from step 4 onward is protected under *handshake traffic keys*
 derived via HKDF from the shared secret computed by the ephemeral key exchange
@@ -45,8 +45,7 @@ For post-`ServerHello` messages, `seehandshake` observes the *encrypted record
 boundaries* — it can tell you that the server sent, for example, three
 application-data records after the ServerHello — and infers stage progression
 from that pattern. Field values inside those records (certificate Subject,
-Issuer, ALPN chosen from a middlebox-injected `EncryptedExtensions`, etc.) are
-displayed as `encrypted (TLS 1.3)`.
+Issuer, selected ALPN, etc.) are displayed as `encrypted (TLS 1.3)`.
 
 ## What would make more visible?
 
@@ -67,8 +66,7 @@ Three options exist, and are on the roadmap:
 ## Why does the tool bother showing encrypted stages at all?
 
 Because the *shape* of the handshake is itself educational. Seeing the client
-send one record, the server respond with two records including an
-`EncryptedExtensions` block, and then application data begin to flow, teaches
-the reader something real about how TLS 1.3 works — even without the field
-values inside. `seehandshake` labels these clearly rather than pretending it
-has decrypted them.
+send one record, the server respond with an encrypted certificate flight and
+Finished message, and then application data begin to flow, teaches the reader
+something real about how TLS 1.3 works — even without the field values inside.
+`seehandshake` labels these clearly rather than pretending it has decrypted them.

@@ -2,17 +2,32 @@
 
 //! High-level handshake state.
 //!
-//! [`HandshakeStage`] enumerates the discrete phases of a TLS 1.3 handshake
-//! as observed passively from the wire. [`HandshakeInfo`] aggregates the
-//! extracted fields, using [`Option`] pervasively because a passive observer
-//! sees fields at different times (or not at all, for encrypted sections of
-//! TLS 1.3).
+//! [`HandshakeStage`] enumerates the six steps of a TLS 1.3 handshake as
+//! depicted in the canonical flow diagram:
+//!
+//! ```text
+//! ① ClientHello    — client → server, plaintext
+//! ② ServerHello    — server → client, plaintext
+//! ③ Certificate    — server → client, encrypted (EncryptedExtensions +
+//!                    Certificate + CertificateVerify)
+//! ④ ClientFinished — client → server, encrypted
+//! ⑤ ServerFinished — server → client, encrypted
+//! ⑥ ApplicationData — bidirectional, encrypted
+//! ```
+//!
+//! Because TLS 1.3 encrypts everything after `ServerHello`, stages beyond
+//! [`HandshakeStage::ServerHello`] are inferred from encrypted record
+//! boundaries rather than decoded. See `docs/tls13-visibility.md`.
+//!
+//! [`HandshakeInfo`] aggregates extracted fields, using [`Option`] pervasively
+//! because a passive observer sees fields at different times (or not at all,
+//! for encrypted sections of TLS 1.3).
 
 use serde::{Deserialize, Serialize};
 
 use crate::model::tls::{AlpnProtocol, CipherSuite, NamedGroup, TlsVersion};
 
-/// Ordered list of stages a TLS 1.3 handshake passes through.
+/// The six observable stages of a TLS 1.3 handshake, mirroring the diagram.
 ///
 /// Because TLS 1.3 encrypts everything after `ServerHello`, stages beyond
 /// [`HandshakeStage::ServerHello`] are inferred from encrypted record
@@ -22,41 +37,36 @@ pub enum HandshakeStage {
     /// No handshake bytes have been observed yet.
     #[default]
     Idle,
-    /// The client has sent `ClientHello`.
+    /// ① The client has sent `ClientHello` (plaintext, client → server).
     ClientHello,
-    /// The server has sent `ServerHello`.
+    /// ② The server has sent `ServerHello` (plaintext, server → client).
     ServerHello,
-    /// One or more encrypted handshake records have been observed from the
-    /// server. Their contents (`EncryptedExtensions`, `Certificate`,
-    /// `CertificateVerify`, server `Finished`) are opaque without keys.
-    EncryptedExtensions,
-    /// Additional encrypted server records have been observed, consistent
-    /// with a `Certificate` message.
+    /// ③ Encrypted server flight: `EncryptedExtensions`, `Certificate`, and
+    /// `CertificateVerify` records have been observed (server → client).
+    /// Contents are opaque to a passive observer.
     Certificate,
-    /// Additional encrypted server records have been observed, consistent
-    /// with a `CertificateVerify` message.
-    CertificateVerify,
-    /// Encrypted `Finished` records have been observed from both endpoints.
-    Finished,
-    /// Application data has begun to flow — the handshake is complete.
-    SecureConnection,
+    /// ④ The client has sent its encrypted `Finished` message (client → server).
+    ClientFinished,
+    /// ⑤ The server has sent its encrypted `Finished` message (server → client).
+    ServerFinished,
+    /// ⑥ Application data is flowing — the handshake is complete (bidirectional).
+    ApplicationData,
     /// The connection saw a fatal condition (bad record, connection reset,
     /// or a parser error). Details are recorded in [`HandshakeInfo::error`].
     Errored,
 }
 
 impl HandshakeStage {
-    /// Ordered display list used by the UI center panel.
+    /// Ordered display list used by the UI center panel (matches diagram step order).
     #[must_use]
     pub const fn ordered() -> &'static [HandshakeStage] {
         &[
             HandshakeStage::ClientHello,
             HandshakeStage::ServerHello,
-            HandshakeStage::EncryptedExtensions,
             HandshakeStage::Certificate,
-            HandshakeStage::CertificateVerify,
-            HandshakeStage::Finished,
-            HandshakeStage::SecureConnection,
+            HandshakeStage::ClientFinished,
+            HandshakeStage::ServerFinished,
+            HandshakeStage::ApplicationData,
         ]
     }
 
@@ -67,11 +77,10 @@ impl HandshakeStage {
             HandshakeStage::Idle => "Idle",
             HandshakeStage::ClientHello => "ClientHello",
             HandshakeStage::ServerHello => "ServerHello",
-            HandshakeStage::EncryptedExtensions => "EncryptedExtensions",
             HandshakeStage::Certificate => "Certificate",
-            HandshakeStage::CertificateVerify => "CertificateVerify",
-            HandshakeStage::Finished => "Finished",
-            HandshakeStage::SecureConnection => "Secure Connection",
+            HandshakeStage::ClientFinished => "Client Finished",
+            HandshakeStage::ServerFinished => "Server Finished",
+            HandshakeStage::ApplicationData => "Application Data",
             HandshakeStage::Errored => "Errored",
         }
     }

@@ -25,29 +25,28 @@ pub const fn explain(stage: HandshakeStage) -> &'static str {
             "that group. From this point onward both endpoints can derive the handshake traffic ",
             "keys, and every following record is encrypted.",
         ),
-        HandshakeStage::EncryptedExtensions => concat!(
-            "Now encrypted under the freshly derived handshake keys. Contains extensions that ",
-            "were not needed to establish the keys — for example, the server's chosen ALPN ",
-            "protocol. A passive observer without keys cannot read this record.",
-        ),
         HandshakeStage::Certificate => concat!(
-            "The server presents its certificate chain, encrypted under the handshake keys. ",
-            "This is where the server proves its identity. Because TLS 1.3 encrypts this stage, ",
-            "a passive observer cannot see the certificate subject or issuer without the keys.",
+            "The server sends three encrypted records in a single flight: EncryptedExtensions ",
+            "(containing extensions such as the chosen ALPN protocol), Certificate (the server's ",
+            "certificate chain proving its identity), and CertificateVerify (a signature over the ",
+            "handshake transcript proving possession of the private key). A passive observer without ",
+            "the session keys cannot read any of these records.",
         ),
-        HandshakeStage::CertificateVerify => concat!(
-            "The server signs a transcript hash of the handshake so far with the private key ",
-            "corresponding to the certificate. This proves possession of the private key — a ",
-            "static certificate alone is not enough.",
+        HandshakeStage::ClientFinished => concat!(
+            "The client sends its encrypted Finished message — an HMAC over the entire handshake ",
+            "transcript, keyed with a secret derived from the handshake key schedule. This confirms ",
+            "that the client received and authenticated the server's messages, and prevents downgrade ",
+            "and tampering attacks on the negotiation.",
         ),
-        HandshakeStage::Finished => concat!(
-            "Both endpoints exchange a Finished message: an HMAC over the entire handshake ",
-            "transcript, keyed with a secret derived from the handshake key schedule. This ",
-            "prevents downgrade and tampering attacks on the negotiation itself.",
+        HandshakeStage::ServerFinished => concat!(
+            "The server sends its encrypted Finished message — an HMAC over the handshake transcript ",
+            "analogous to the client's. Once both Finished messages have been exchanged and verified, ",
+            "both sides derive the application-traffic keys and the handshake is complete.",
         ),
-        HandshakeStage::SecureConnection => concat!(
-            "The handshake is complete. Both sides switch to application-traffic keys and can ",
-            "begin exchanging protected application data (HTTP/2 frames, for example).",
+        HandshakeStage::ApplicationData => concat!(
+            "The handshake is complete. Both sides have switched to application-traffic keys and are ",
+            "exchanging protected application data (for example, HTTP/2 frames). Every record from ",
+            "this point forward is encrypted with the negotiated cipher suite.",
         ),
         HandshakeStage::Errored => concat!(
             "The parser reported a fatal error for this connection. This is usually a truncated ",

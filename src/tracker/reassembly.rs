@@ -240,19 +240,31 @@ fn apply_encrypted_record(
     // docs/tls13-visibility.md.
     if direction == Direction::ServerToClient {
         *encrypted_records_from_server += 1;
-        handshake.stage = match *encrypted_records_from_server {
-            1 => HandshakeStage::EncryptedExtensions,
-            2 => HandshakeStage::Certificate,
-            3 => HandshakeStage::CertificateVerify,
-            _ => HandshakeStage::Finished,
+        handshake.stage = if *saw_client_finished_marker {
+            // Post-handshake server records are application data.
+            HandshakeStage::ApplicationData
+        } else {
+            match *encrypted_records_from_server {
+                // Records 1-3: EncryptedExtensions, Certificate, CertificateVerify
+                // (diagram step ③ — all grouped as the server's certificate flight).
+                1..=3 => HandshakeStage::Certificate,
+                // Record 4+: server's Finished message (diagram step ⑤).
+                _ => HandshakeStage::ServerFinished,
+            }
         };
         if handshake.certificate_subject.is_none() {
             handshake.certificate_subject = Some("encrypted (TLS 1.3)".into());
             handshake.certificate_issuer = Some("encrypted (TLS 1.3)".into());
         }
     } else if *encrypted_records_from_server > 0 {
-        *saw_client_finished_marker = true;
-        handshake.stage = HandshakeStage::SecureConnection;
+        if !*saw_client_finished_marker {
+            // First client encrypted record: diagram step ④ (Client Finished).
+            *saw_client_finished_marker = true;
+            handshake.stage = HandshakeStage::ClientFinished;
+        } else {
+            // Subsequent client records: application data (diagram step ⑥).
+            handshake.stage = HandshakeStage::ApplicationData;
+        }
     }
 }
 
