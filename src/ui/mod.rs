@@ -180,6 +180,7 @@ fn run_event_loop(
                 match key.code {
                     KeyCode::Char('q') | KeyCode::Esc => break,
                     KeyCode::Char('e') => app.toggle_education(),
+                    KeyCode::Char('d') => app.toggle_diagram(),
                     KeyCode::Up => app.select_prev(),
                     KeyCode::Down => app.select_next(),
                     _ => {}

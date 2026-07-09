@@ -10,6 +10,7 @@ use tls_parser::{TlsMessage, TlsMessageHandshake};
 use crate::error::Result;
 use crate::model::connection::Direction;
 use crate::model::{ConnectionKey, ConnectionState, HandshakeInfo, HandshakeStage};
+use crate::model::tls::TlsVersion;
 use crate::parser::handshake::{ClientHelloInfo, ServerHelloInfo};
 use crate::parser::record::{parse_records, TlsRecordType};
 
@@ -135,8 +136,10 @@ impl ConnectionTracker {
                         direction,
                     );
                 }
-                TlsRecordType::ChangeCipherSpec
-                | TlsRecordType::Alert
+                TlsRecordType::ChangeCipherSpec => {
+                    apply_ccs(&mut conn.state.handshake, direction);
+                }
+                TlsRecordType::Alert
                 | TlsRecordType::Other(_) => {}
             }
         }
@@ -184,6 +187,24 @@ fn apply_handshake_record(handshake: &mut HandshakeInfo, payload: &[u8], directi
                             let extracted = crate::parser::extract_server_hello(&sh);
                             merge_server_hello(handshake, extracted);
                         }
+                        // TLS 1.2: plaintext server certificate (TLS 1.3 encrypts this).
+                        (TlsMessageHandshake::Certificate(_), Direction::ServerToClient) => {
+                            if handshake.tls_version != Some(TlsVersion::Tls13) {
+                                handshake.stage = HandshakeStage::ServerCertificate;
+                            }
+                        }
+                        // TLS 1.2: plaintext server key-exchange (DHE/ECDHE).
+                        (TlsMessageHandshake::ServerKeyExchange(_), _) => {
+                            handshake.stage = HandshakeStage::ServerKeyExchange;
+                        }
+                        // TLS 1.2: ServerHelloDone signals end of server's plaintext flight.
+                        (TlsMessageHandshake::ServerDone(_), _) => {
+                            handshake.stage = HandshakeStage::ServerHelloDone;
+                        }
+                        // TLS 1.2: plaintext client key-exchange.
+                        (TlsMessageHandshake::ClientKeyExchange(_), Direction::ClientToServer) => {
+                            handshake.stage = HandshakeStage::ClientKeyExchange;
+                        }
                         _ => {}
                     }
                 }
@@ -228,16 +249,47 @@ fn merge_server_hello(dst: &mut HandshakeInfo, src: ServerHelloInfo) {
     }
 }
 
+fn apply_ccs(handshake: &mut HandshakeInfo, direction: Direction) {
+    // ChangeCipherSpec in TLS 1.3 is a legacy middlebox-compatibility noop;
+    // we ignore it there. In TLS 1.2, client CCS means the encrypted
+    // ClientFinished is next; server CCS means the encrypted ServerFinished
+    // is next. We use stage guards so TLS 1.3 connections are unaffected.
+    match direction {
+        Direction::ClientToServer => {
+            if handshake.stage == HandshakeStage::ClientKeyExchange {
+                handshake.stage = HandshakeStage::ClientFinished;
+            }
+        }
+        Direction::ServerToClient => {
+            if handshake.stage == HandshakeStage::ClientFinished {
+                handshake.stage = HandshakeStage::ServerFinished;
+            }
+        }
+    }
+}
+
 fn apply_encrypted_record(
     handshake: &mut HandshakeInfo,
     encrypted_records_from_server: &mut usize,
     saw_client_finished_marker: &mut bool,
     direction: Direction,
 ) {
-    // In TLS 1.3 everything after ServerHello is wrapped in ApplicationData
-    // records at the record layer. We count these to advance stage
-    // heuristically. This mirrors the honest limitation documented in
-    // docs/tls13-visibility.md.
+    // In TLS 1.2, ApplicationData records are actual application data — they
+    // only appear after the handshake is fully complete.  In TLS 1.3,
+    // ApplicationData records also carry encrypted handshake messages
+    // (EncryptedExtensions, Certificate, Finished, etc.), so we count them
+    // heuristically to advance the stage.
+    let is_tls12 = matches!(
+        handshake.tls_version,
+        Some(TlsVersion::Ssl30 | TlsVersion::Tls10 | TlsVersion::Tls11 | TlsVersion::Tls12)
+    );
+    if is_tls12 {
+        handshake.stage = HandshakeStage::ApplicationData;
+        return;
+    }
+
+    // TLS 1.3: count encrypted records to advance stage heuristically.
+    // This mirrors the honest limitation documented in docs/tls13-visibility.md.
     if direction == Direction::ServerToClient {
         *encrypted_records_from_server += 1;
         handshake.stage = if *saw_client_finished_marker {

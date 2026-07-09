@@ -2,9 +2,11 @@
 
 //! High-level handshake state.
 //!
-//! [`HandshakeStage`] enumerates the six steps of a TLS 1.3 handshake as
-//! depicted in the canonical flow diagram:
+//! [`HandshakeStage`] enumerates the observable steps of a TLS handshake,
+//! covering both TLS 1.3 (6 steps) and TLS 1.2 (9 tracked steps from the
+//! full 13-step diagram):
 //!
+//! **TLS 1.3** (everything after `ServerHello` is encrypted):
 //! ```text
 //! ① ClientHello    — client → server, plaintext
 //! ② ServerHello    — server → client, plaintext
@@ -13,6 +15,19 @@
 //! ④ ClientFinished — client → server, encrypted
 //! ⑤ ServerFinished — server → client, encrypted
 //! ⑥ ApplicationData — bidirectional, encrypted
+//! ```
+//!
+//! **TLS 1.2** (certificate and key-exchange messages are plaintext):
+//! ```text
+//! ①  ClientHello      — client → server, plaintext
+//! ②  ServerHello      — server → client, plaintext
+//! ③  ServerCertificate — server → client, plaintext
+//! ④  ServerKeyExchange — server → client, plaintext (DHE/ECDHE only)
+//! ⑥  ServerHelloDone  — server → client, plaintext
+//! ⑦  ClientKeyExchange — client → server, plaintext
+//! ⑩  ClientFinished   — client → server, encrypted
+//! ⑫  ServerFinished   — server → client, encrypted
+//! ⑬  ApplicationData  — bidirectional, encrypted
 //! ```
 //!
 //! Because TLS 1.3 encrypts everything after `ServerHello`, stages beyond
@@ -27,11 +42,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::model::tls::{AlpnProtocol, CipherSuite, NamedGroup, TlsVersion};
 
-/// The six observable stages of a TLS 1.3 handshake, mirroring the diagram.
+/// The observable stages of a TLS handshake, covering both TLS 1.2 and 1.3.
 ///
-/// Because TLS 1.3 encrypts everything after `ServerHello`, stages beyond
-/// [`HandshakeStage::ServerHello`] are inferred from encrypted record
-/// boundaries rather than decoded. See `docs/tls13-visibility.md`.
+/// TLS 1.3-only stages: [`Certificate`](HandshakeStage::Certificate).
+///
+/// TLS 1.2-only stages: [`ServerCertificate`](HandshakeStage::ServerCertificate),
+/// [`ServerKeyExchange`](HandshakeStage::ServerKeyExchange),
+/// [`ServerHelloDone`](HandshakeStage::ServerHelloDone),
+/// [`ClientKeyExchange`](HandshakeStage::ClientKeyExchange).
+///
+/// Shared stages: `ClientHello`, `ServerHello`, `ClientFinished`,
+/// `ServerFinished`, `ApplicationData`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum HandshakeStage {
     /// No handshake bytes have been observed yet.
@@ -41,15 +62,28 @@ pub enum HandshakeStage {
     ClientHello,
     /// ② The server has sent `ServerHello` (plaintext, server → client).
     ServerHello,
-    /// ③ Encrypted server flight: `EncryptedExtensions`, `Certificate`, and
-    /// `CertificateVerify` records have been observed (server → client).
-    /// Contents are opaque to a passive observer.
+    /// ③ *TLS 1.3*: Encrypted server flight — `EncryptedExtensions`,
+    /// `Certificate`, and `CertificateVerify` (server → client). Opaque to
+    /// a passive observer.
     Certificate,
-    /// ④ The client has sent its encrypted `Finished` message (client → server).
+    /// ③ *TLS 1.2*: Plaintext server certificate chain (server → client).
+    ServerCertificate,
+    /// ④ *TLS 1.2*: Plaintext server key-exchange parameters (server → client,
+    /// DHE/ECDHE only).
+    ServerKeyExchange,
+    /// ⑥ *TLS 1.2*: `ServerHelloDone` — server signals the end of its
+    /// plaintext flight (server → client).
+    ServerHelloDone,
+    /// ⑦ *TLS 1.2*: Plaintext client key-exchange message (client → server).
+    ClientKeyExchange,
+    /// ④/⑩ The client has sent its encrypted `Finished` message
+    /// (client → server). Step ④ in TLS 1.3, ⑩ in TLS 1.2.
     ClientFinished,
-    /// ⑤ The server has sent its encrypted `Finished` message (server → client).
+    /// ⑤/⑫ The server has sent its encrypted `Finished` message
+    /// (server → client). Step ⑤ in TLS 1.3, ⑫ in TLS 1.2.
     ServerFinished,
-    /// ⑥ Application data is flowing — the handshake is complete (bidirectional).
+    /// ⑥/⑬ Application data is flowing — the handshake is complete
+    /// (bidirectional, encrypted). Step ⑥ in TLS 1.3, ⑬ in TLS 1.2.
     ApplicationData,
     /// The connection saw a fatal condition (bad record, connection reset,
     /// or a parser error). Details are recorded in [`HandshakeInfo::error`].
@@ -57,13 +91,29 @@ pub enum HandshakeStage {
 }
 
 impl HandshakeStage {
-    /// Ordered display list used by the UI center panel (matches diagram step order).
+    /// Ordered display list for TLS 1.3 handshakes (matches diagram step order).
     #[must_use]
     pub const fn ordered() -> &'static [HandshakeStage] {
         &[
             HandshakeStage::ClientHello,
             HandshakeStage::ServerHello,
             HandshakeStage::Certificate,
+            HandshakeStage::ClientFinished,
+            HandshakeStage::ServerFinished,
+            HandshakeStage::ApplicationData,
+        ]
+    }
+
+    /// Ordered display list for TLS 1.2 handshakes (matches diagram step order).
+    #[must_use]
+    pub const fn ordered_tls12() -> &'static [HandshakeStage] {
+        &[
+            HandshakeStage::ClientHello,
+            HandshakeStage::ServerHello,
+            HandshakeStage::ServerCertificate,
+            HandshakeStage::ServerKeyExchange,
+            HandshakeStage::ServerHelloDone,
+            HandshakeStage::ClientKeyExchange,
             HandshakeStage::ClientFinished,
             HandshakeStage::ServerFinished,
             HandshakeStage::ApplicationData,
@@ -78,9 +128,13 @@ impl HandshakeStage {
             HandshakeStage::ClientHello => "ClientHello",
             HandshakeStage::ServerHello => "ServerHello",
             HandshakeStage::Certificate => "Certificate",
-            HandshakeStage::ClientFinished => "Client Finished",
-            HandshakeStage::ServerFinished => "Server Finished",
-            HandshakeStage::ApplicationData => "Application Data",
+            HandshakeStage::ServerCertificate => "Server Cert",
+            HandshakeStage::ServerKeyExchange => "Svr Key Exch",
+            HandshakeStage::ServerHelloDone => "Svr Hello Done",
+            HandshakeStage::ClientKeyExchange => "Clt Key Exch",
+            HandshakeStage::ClientFinished => "Clt Finished",
+            HandshakeStage::ServerFinished => "Svr Finished",
+            HandshakeStage::ApplicationData => "App Data",
             HandshakeStage::Errored => "Errored",
         }
     }

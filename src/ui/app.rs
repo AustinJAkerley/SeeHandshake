@@ -24,6 +24,8 @@ pub struct App {
     selected: usize,
     /// Whether the educational overlay is active.
     education: bool,
+    /// Whether the reference diagram overlay is active.
+    diagram_overlay: bool,
     /// Monotonic tick counter used for arrow animation.
     tick_count: u64,
     /// Cumulative number of stale-evicted connections (for the status
@@ -47,6 +49,17 @@ impl App {
     #[must_use]
     pub fn education(&self) -> bool {
         self.education
+    }
+
+    /// Toggle the reference diagram overlay.
+    pub fn toggle_diagram(&mut self) {
+        self.diagram_overlay = !self.diagram_overlay;
+    }
+
+    /// Whether the reference diagram overlay is active.
+    #[must_use]
+    pub fn diagram(&self) -> bool {
+        self.diagram_overlay
     }
 
     /// Move the selection cursor up one position (saturating at 0).

@@ -32,6 +32,26 @@ pub const fn explain(stage: HandshakeStage) -> &'static str {
             "handshake transcript proving possession of the private key). A passive observer without ",
             "the session keys cannot read any of these records.",
         ),
+        HandshakeStage::ServerCertificate => concat!(
+            "In TLS 1.2 the server sends its certificate chain in the clear. A passive observer can ",
+            "read the full certificate, extract the subject and issuer DN, and verify the chain. ",
+            "This is one of the key differences from TLS 1.3, which encrypts the certificate.",
+        ),
+        HandshakeStage::ServerKeyExchange => concat!(
+            "For cipher suites using ephemeral Diffie-Hellman (DHE or ECDHE), the server sends its ",
+            "public key share in the clear. This message is omitted for RSA key-exchange suites. ",
+            "The server signs the parameters to prove possession of the private key.",
+        ),
+        HandshakeStage::ServerHelloDone => concat!(
+            "ServerHelloDone is a one-byte marker the server sends to signal the end of its ",
+            "initial plaintext flight (ServerHello + optional Certificate + optional ",
+            "ServerKeyExchange). It tells the client the server is ready for the client's response.",
+        ),
+        HandshakeStage::ClientKeyExchange => concat!(
+            "In TLS 1.2 the client sends its key material in the clear (for RSA: the pre-master ",
+            "secret encrypted with the server's public key; for DHE/ECDHE: the client's public ",
+            "share). Both sides can now independently derive the master secret and session keys.",
+        ),
         HandshakeStage::ClientFinished => concat!(
             "The client sends its encrypted Finished message — an HMAC over the entire handshake ",
             "transcript, keyed with a secret derived from the handshake key schedule. This confirms ",

@@ -3,6 +3,7 @@
 //! Three-panel Ratatui rendering.
 
 pub mod connections;
+pub mod diagram;
 pub mod flow;
 pub mod metadata;
 
@@ -35,6 +36,11 @@ pub fn render(f: &mut Frame<'_>, app: &App) {
     flow::render(f, app, panels[1]);
     metadata::render(f, app, panels[2]);
 
+    // Reference diagram overlay (toggled by [d]).
+    if app.diagram() {
+        diagram::render(f, outer[0]);
+    }
+
     // Status line.
     let status = Line::from(vec![
         Span::styled("seehandshake", Style::default().fg(Color::Cyan)),
@@ -50,6 +56,13 @@ pub fn render(f: &mut Frame<'_>, app: &App) {
             " education: ON"
         } else {
             " education: off"
+        }),
+        Span::raw("  "),
+        Span::styled("[d]", Style::default().fg(Color::Yellow)),
+        Span::raw(if app.diagram() {
+            " diagram: ON"
+        } else {
+            " diagram"
         }),
         Span::raw("  "),
         Span::styled("[\u{2191}/\u{2193}]", Style::default().fg(Color::Yellow)),

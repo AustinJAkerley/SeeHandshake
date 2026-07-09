@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-//! Center panel: TLS 1.3 handshake flow diagram.
+//! Center panel: TLS handshake flow diagram (version-aware).
 //!
 //! Renders a Client ↔ Server diagram with numbered steps and directional
-//! arrows that mirror the canonical TLS 1.3 handshake illustration:
+//! arrows. For TLS 1.3 the layout mirrors the 6-step diagram:
 //!
 //! ```text
 //!  CLIENT              SERVER
@@ -21,6 +21,32 @@
 //! ⑥  │◄─── App Data ──────►│  E
 //!    │                    │
 //! ```
+//!
+//! For TLS 1.2 the layout uses the 9-step diagram (skipping optional steps
+//! and ChangeCipherSpec rows which are not tracked as stages):
+//!
+//! ```text
+//!  CLIENT              SERVER
+//!    │                    │
+//! ①  │─── ClientHello ────►│
+//!    │                    │
+//!    │◄─── ServerHello ────│ ②
+//!    │                    │
+//!    │◄─── Server Cert ────│ ③
+//!    │                    │
+//!    │◄─── Svr Key Exch ───│ ④
+//!    │                    │
+//!    │◄─── Svr Hello Done─ │ ⑥
+//!    │                    │
+//! ⑦  │─── Clt Key Exch ───►│
+//!    │                    │
+//! ⑩  │─── Clt Finished ───►│  E
+//!    │                    │
+//!    │◄─── Svr Finished ───│ ⑫E
+//!    │                    │
+//! ⑬  │◄─── App Data ──────►│  E
+//!    │                    │
+//! ```
 
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
@@ -28,6 +54,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 use ratatui::Frame;
 
+use crate::model::tls::TlsVersion;
 use crate::model::HandshakeStage;
 use crate::ui::app::App;
 use crate::ui::education::explain;
@@ -44,35 +71,65 @@ enum FlowDir {
 }
 
 /// Per-stage diagram metadata: `(step_number, direction, is_encrypted)`.
-const fn step_meta(stage: HandshakeStage) -> (u8, FlowDir, bool) {
+///
+/// `is_tls12` selects the step number for shared stages that differ between
+/// TLS 1.2 (ClientFinished = ⑩, ServerFinished = ⑫, ApplicationData = ⑬)
+/// and TLS 1.3 (④, ⑤, ⑥).
+fn step_meta(stage: HandshakeStage, is_tls12: bool) -> (u8, FlowDir, bool) {
     match stage {
-        HandshakeStage::ClientHello    => (1, FlowDir::Right, false),
-        HandshakeStage::ServerHello    => (2, FlowDir::Left,  false),
-        HandshakeStage::Certificate    => (3, FlowDir::Left,  true),
-        HandshakeStage::ClientFinished => (4, FlowDir::Right, true),
-        HandshakeStage::ServerFinished => (5, FlowDir::Left,  true),
-        HandshakeStage::ApplicationData => (6, FlowDir::Both, true),
-        _ => (0, FlowDir::Right, false),
+        HandshakeStage::ClientHello       => (1,  FlowDir::Right, false),
+        HandshakeStage::ServerHello       => (2,  FlowDir::Left,  false),
+        HandshakeStage::Certificate       => (3,  FlowDir::Left,  true),  // TLS 1.3
+        HandshakeStage::ServerCertificate => (3,  FlowDir::Left,  false), // TLS 1.2
+        HandshakeStage::ServerKeyExchange => (4,  FlowDir::Left,  false), // TLS 1.2
+        HandshakeStage::ServerHelloDone   => (6,  FlowDir::Left,  false), // TLS 1.2
+        HandshakeStage::ClientKeyExchange => (7,  FlowDir::Right, false), // TLS 1.2
+        HandshakeStage::ClientFinished => {
+            if is_tls12 { (10, FlowDir::Right, true) } else { (4, FlowDir::Right, true) }
+        }
+        HandshakeStage::ServerFinished => {
+            if is_tls12 { (12, FlowDir::Left, true) } else { (5, FlowDir::Left, true) }
+        }
+        HandshakeStage::ApplicationData => {
+            if is_tls12 { (13, FlowDir::Both, true) } else { (6, FlowDir::Both, true) }
+        }
+        // Idle and Errored are never rendered as step rows.
+        HandshakeStage::Idle | HandshakeStage::Errored => (0, FlowDir::Right, false),
     }
 }
 
 fn circled(n: u8) -> char {
     match n {
-        1 => '①',
-        2 => '②',
-        3 => '③',
-        4 => '④',
-        5 => '⑤',
-        6 => '⑥',
-        _ => '○',
+        1  => '①',
+        2  => '②',
+        3  => '③',
+        4  => '④',
+        5  => '⑤',
+        6  => '⑥',
+        7  => '⑦',
+        8  => '⑧',
+        9  => '⑨',
+        10 => '⑩',
+        11 => '⑪',
+        12 => '⑫',
+        13 => '⑬',
+        _  => '○',
     }
 }
 
 /// Render the center handshake-flow panel.
 pub fn render(f: &mut Frame<'_>, app: &App, area: Rect) {
-    let current_stage = app
-        .selected()
-        .map_or(HandshakeStage::Idle, |c| c.handshake.stage);
+    let selected = app.selected();
+    let current_stage = selected.map_or(HandshakeStage::Idle, |c| c.handshake.stage);
+
+    let is_tls12 = selected
+        .and_then(|c| c.handshake.tls_version)
+        .is_some_and(|v| {
+            matches!(
+                v,
+                TlsVersion::Ssl30 | TlsVersion::Tls10 | TlsVersion::Tls11 | TlsVersion::Tls12
+            )
+        });
 
     // inner_width subtracts the 1-char borders on each side.
     let inner_width = area.width.saturating_sub(2) as usize;
@@ -84,12 +141,17 @@ pub fn render(f: &mut Frame<'_>, app: &App, area: Rect) {
     lines.push(connector_line(inner_width));
 
     // Step rows
-    let ordered = HandshakeStage::ordered();
+    let ordered = if is_tls12 {
+        HandshakeStage::ordered_tls12()
+    } else {
+        HandshakeStage::ordered()
+    };
     for (i, &stage) in ordered.iter().enumerate() {
         let is_active = stage == current_stage;
-        let is_past = stage_index(current_stage).is_some_and(|c| i < c);
+        let current_idx = ordered.iter().position(|s| *s == current_stage);
+        let is_past = current_idx.is_some_and(|c| i < c);
 
-        lines.push(step_line(stage, inner_width, is_active, is_past));
+        lines.push(step_line(stage, inner_width, is_active, is_past, is_tls12));
 
         if i + 1 < ordered.len() {
             lines.push(connector_line(inner_width));
@@ -113,8 +175,9 @@ pub fn render(f: &mut Frame<'_>, app: &App, area: Rect) {
         }
     }
 
+    let title = if is_tls12 { "Handshake (TLS 1.2)" } else { "Handshake" };
     let paragraph = Paragraph::new(lines)
-        .block(Block::default().borders(Borders::ALL).title("Handshake"))
+        .block(Block::default().borders(Borders::ALL).title(title))
         .wrap(Wrap { trim: false });
 
     f.render_widget(paragraph, area);
@@ -172,8 +235,9 @@ fn step_line(
     inner_width: usize,
     is_active: bool,
     is_past: bool,
+    is_tls12: bool,
 ) -> Line<'static> {
-    let (step_n, dir, encrypted) = step_meta(stage);
+    let (step_n, dir, encrypted) = step_meta(stage, is_tls12);
 
     let arrow_style = if is_active {
         Style::default()
@@ -187,20 +251,21 @@ fn step_line(
     let bar = Style::default().fg(Color::DarkGray);
 
     let ch = circled(step_n);
-    let enc = if encrypted { 'E' } else { ' ' };
 
-    // Left prefix (3 chars):
+    // Left prefix (3 display columns):
     //   "①  " for client-originating steps; "   " for server-originating.
     let left_prefix: String = match dir {
-        FlowDir::Right | FlowDir::Both => format!("{}  ", ch),
-        FlowDir::Left => "   ".to_string(),
+        FlowDir::Right | FlowDir::Both => format!("{ch}  "),
+        FlowDir::Left => "   ".into(),
     };
 
-    // Right suffix (3 chars):
-    //   " ②E" for server-originating; "  E" otherwise.
+    // Right suffix (3 display columns):
+    //   " ②E" for server-originating; "  E" or "   " otherwise.
     let right_suffix: String = match dir {
-        FlowDir::Left => format!(" {}{}", ch, enc),
-        FlowDir::Right | FlowDir::Both => format!("  {}", enc),
+        FlowDir::Left => format!(" {ch}{}", if encrypted { 'E' } else { ' ' }),
+        FlowDir::Right | FlowDir::Both => {
+            if encrypted { "  E".into() } else { "   ".into() }
+        }
     };
 
     let content_w = cw(inner_width);
@@ -233,9 +298,9 @@ fn make_arrow(dir: FlowDir, label: &str, width: usize) -> String {
         let max_label = width.saturating_sub(heads);
         let t = &label[..max_label.min(label.len())];
         return match dir {
-            FlowDir::Right => format!("{}►", t),
-            FlowDir::Left  => format!("◄{}", t),
-            FlowDir::Both  => format!("◄{}►", t),
+            FlowDir::Right => format!("{t}►"),
+            FlowDir::Left  => format!("◄{t}"),
+            FlowDir::Both  => format!("◄{t}►"),
         };
     }
 
@@ -246,12 +311,8 @@ fn make_arrow(dir: FlowDir, label: &str, width: usize) -> String {
     let r = "─".repeat(right_d);
 
     match dir {
-        FlowDir::Right => format!("{}{}{}►", l, label, r),
-        FlowDir::Left  => format!("◄{}{}{}", l, label, r),
-        FlowDir::Both  => format!("◄{}{}{}►", l, label, r),
+        FlowDir::Right => format!("{l}{label}{r}►"),
+        FlowDir::Left  => format!("◄{l}{label}{r}"),
+        FlowDir::Both  => format!("◄{l}{label}{r}►"),
     }
-}
-
-fn stage_index(stage: HandshakeStage) -> Option<usize> {
-    HandshakeStage::ordered().iter().position(|s| *s == stage)
 }
