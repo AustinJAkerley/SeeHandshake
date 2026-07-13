@@ -35,9 +35,9 @@ those keys cannot decrypt `EncryptedExtensions`, `Certificate`,
 - Later stages are detected from encrypted record boundaries and labeled
   accordingly. The certificate Subject/Issuer fields display
   `encrypted (TLS 1.3)` for pure TLS 1.3 connections.
-- The **three-pane view** — connections on the left, the record timeline
-  in the middle, connection metadata (or per-record sections) on the
-  right — lets you step through every TLS record on the wire in order.
+- The **three-pane view** (connections on the left, the record timeline
+  in the middle, connection metadata or per-record sections on the
+  right) lets you step through every TLS record on the wire in order.
   Arrowing into a record flips the right pane into a sectioned, educational
   breakdown: plaintext handshake messages are broken out field by field
   (random, session_id, every cipher suite with its hex code, every
@@ -47,7 +47,7 @@ those keys cannot decrypt `EncryptedExtensions`, `Certificate`,
   hint ("You sent this" / "The server sent you this") and a short "what
   this is / why it matters" blurb.
 - On Linux, every row also shows the **local process** that opened the
-  socket — `curl (pid 1234, uid 1000)` with the full cmdline, or `firefox`
+  socket: `curl (pid 1234, uid 1000)` with the full cmdline, or `firefox`
   for browser flows. CLI cmdlines *are* the user action; browser processes
   identify the app, not the specific click. See
   [`docs/attribution.md`](docs/attribution.md).
@@ -114,7 +114,7 @@ curl https://example.com
 
 The connection will appear in the left panel; the middle panel lists every
 TLS record on the wire as it arrives; the right panel shows the negotiated
-metadata for the selected connection — including an **Origin** row on
+metadata for the selected connection, including an **Origin** row on
 Linux naming the local process that owns the socket. Use `←` / `→` (or
 `Tab`) to move focus between panes and `↑` / `↓` to select within a pane.
 Arrowing through records flips the right pane into a per-record
@@ -142,21 +142,21 @@ tracked connections. Press `q` to quit.
    test mocks)
 ```
 
-Three threads, connected by `std::sync::mpsc` channels — no global mutable
+Three threads, connected by `std::sync::mpsc` channels: no global mutable
 state, no async runtime. See [`docs/architecture.md`](docs/architecture.md).
 
 ## Documentation
 
-- [`docs/architecture.md`](docs/architecture.md) — module and threading model
-- [`docs/tls13-visibility.md`](docs/tls13-visibility.md) — what a passive
+- [`docs/architecture.md`](docs/architecture.md): module and threading model
+- [`docs/tls13-visibility.md`](docs/tls13-visibility.md): what a passive
   observer can and cannot see
-- [`docs/attribution.md`](docs/attribution.md) — how the Linux Origin row is
+- [`docs/attribution.md`](docs/attribution.md): how the Linux Origin row is
   derived from `/proc/net/tcp` + `/proc/*/fd`, and its limits
-- [`docs/development.md`](docs/development.md) — building, testing, and
+- [`docs/development.md`](docs/development.md): building, testing, and
   running the TUI locally
-- [`docs/packaging.md`](docs/packaging.md) — cutting releases and shipping
+- [`docs/packaging.md`](docs/packaging.md): cutting releases and shipping
   through crates.io, apt, Homebrew, AUR, Nix, MacPorts, and winget
-- `cargo doc --open` — full API reference
+- `cargo doc --open`: full API reference
 
 ## Contributing
 
@@ -183,4 +183,4 @@ Design decisions in the MVP already leave room for:
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE).

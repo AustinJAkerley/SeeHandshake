@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-//! Reference diagram overlay — shown when the user presses `[d]`.
+//! Reference diagram overlay, shown when the user presses `[d]`.
 //!
 //! Renders a full-screen side-by-side ASCII comparison of the TLS 1.2 and
 //! TLS 1.3 handshake flows, matching the canonical reference diagrams.
@@ -80,13 +80,13 @@ fn tls12_widget() -> Paragraph<'static> {
         // ⑦ ClientKeyExchange (plaintext)
         Line::from(vec![a("⑦ ├──── CltKeyExchange ─────────►│")]),
         Line::from(vec![b("  │                          │")]),
-        // [ChangeCipherSpec from client — not tracked as stage]
+        // [ChangeCipherSpec from client, not tracked as stage]
         Line::from(vec![n("  ├╌╌╌╌ ChangeCipherSpec ╌╌╌╌╌►│")]),
         Line::from(vec![b("  │                          │")]),
         // ⑩ ClientFinished (encrypted)
         Line::from(vec![e("⑩ ├──── Clt Finished ───────────►│  E")]),
         Line::from(vec![b("  │                          │")]),
-        // [ChangeCipherSpec from server — not tracked as stage]
+        // [ChangeCipherSpec from server, not tracked as stage]
         Line::from(vec![n("  │◄╌╌╌╌ ChangeCipherSpec ╌╌╌╌╌╌┤")]),
         Line::from(vec![b("  │                          │")]),
         // ⑫ ServerFinished (encrypted)

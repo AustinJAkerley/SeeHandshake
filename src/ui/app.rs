@@ -116,7 +116,7 @@ impl App {
     ///
     /// When switching into the Flow view, park the cursor on the
     /// ClientHello so the diagram starts at the first step rather than the
-    /// connection's current stage (which is `ApplicationData` — the end —
+    /// connection's current stage (which is `ApplicationData`, the end,
     /// once the handshake completes).
     pub fn toggle_middle_mode(&mut self) {
         self.middle_mode = match self.middle_mode {
@@ -193,7 +193,7 @@ impl App {
 
     /// Move focus one pane to the right (clamped at Right). Landing on
     /// Right implicitly advances past the Metadata pseudo-row if the user
-    /// hasn't picked a real record yet — the right pane has nothing to
+    /// hasn't picked a real record yet: the right pane has nothing to
     /// interact with in `Metadata` mode.
     pub fn focus_right(&mut self) {
         self.focus = match self.focus {
@@ -363,7 +363,7 @@ impl App {
                         RecordDirection::ServerToClient => HandshakeStage::ServerFinished,
                     })
                 } else {
-                    // EncryptedExtensions / Certificate / CertificateVerify —
+                    // EncryptedExtensions / Certificate / CertificateVerify:
                     // TLS 1.3 encrypted server flight sits at Certificate.
                     Some(HandshakeStage::Certificate)
                 }
@@ -397,7 +397,7 @@ impl App {
     }
 
     /// Whether the section at index `i` should render its long-form text.
-    /// Now globally gated by the `[e]` toggle — there is no per-section
+    /// Now globally gated by the `[e]` toggle; there is no per-section
     /// expansion.
     #[must_use]
     pub fn is_section_expanded(&self, _i: usize) -> bool {

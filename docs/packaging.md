@@ -26,10 +26,10 @@ cargo build --release
 
 Then:
 
-1. Bump `version` in `Cargo.toml` (SemVer — breaking changes bump major even
+1. Bump `version` in `Cargo.toml` (SemVer; breaking changes bump major even
    pre-1.0, per project policy).
 2. Move the `## [Unreleased]` block in `CHANGELOG.md` under a new
-   `## [X.Y.Z] — YYYY-MM-DD` heading, and open a fresh empty `[Unreleased]`.
+   `## [X.Y.Z] - YYYY-MM-DD` heading, and open a fresh empty `[Unreleased]`.
 3. Commit: `release: X.Y.Z`.
 4. Tag: `git tag -s vX.Y.Z -m "seehandshake X.Y.Z"`.
 5. Push: `git push origin main --follow-tags`.
@@ -46,7 +46,7 @@ Once the GitHub release exists, proceed through the channels below.
 
 ---
 
-## crates.io — the source-of-truth publish
+## crates.io: the source-of-truth publish
 
 Every release is published to crates.io. Downstream package managers (some
 of which build from source) key off the crates.io tarball.
@@ -100,7 +100,7 @@ to take weeks for the first upload.
 
 ### Prerequisites
 
-- The project must be MIT (or another DFSG-free license) — ✅ we are MIT.
+- The project must be MIT (or another DFSG-free license), which it is.
 - Every dependency must already be packaged in Debian, or must be uploaded
   first. Check with `apt-cache search 'librust-<crate>-dev'`. The largest
   risks in our dep tree are `ratatui` and `tls-parser`, which are packaged
@@ -197,7 +197,7 @@ sudo apt update && sudo apt install seehandshake
 
 ## Homebrew (macOS + Linuxbrew)
 
-Homebrew is the fastest of the third-party channels — a single formula PR
+Homebrew is the fastest of the third-party channels: a single formula PR
 against a tap repo.
 
 ### Option A: a project-owned tap (recommended for early releases)
@@ -239,7 +239,7 @@ brew install seehandshake
 Once the project has ~75 GitHub stars and a stable release cadence (a rough
 guideline Homebrew maintainers use), open a PR against
 [Homebrew/homebrew-core](https://github.com/Homebrew/homebrew-core) with the
-same formula. The audit is stricter — expect requests to tighten test blocks
+same formula. The audit is stricter, so expect requests to tighten test blocks
 and remove `head`.
 
 ### Automating formula updates
@@ -266,11 +266,11 @@ Bump the tap formula automatically on each release by adding a job to
 
 ## Arch Linux (AUR)
 
-The AUR does not host binaries — it hosts `PKGBUILD` scripts that build from
+The AUR does not host binaries; it hosts `PKGBUILD` scripts that build from
 source on the user's machine. Publish two packages:
 
-- `seehandshake` — builds the latest tagged release from source.
-- `seehandshake-git` (optional) — builds `main`, for early adopters.
+- `seehandshake`: builds the latest tagged release from source.
+- `seehandshake-git` (optional): builds `main`, for early adopters.
 
 ### `PKGBUILD` template
 
@@ -452,8 +452,8 @@ winget install <owner>.SeeHandshake
 
 ## Chocolatey (Windows)
 
-Many Windows developers and sysadmins — a good chunk of this tool's
-audience — live in Chocolatey rather than winget. The community repository
+Many Windows developers and sysadmins, a good chunk of this tool's
+audience, live in Chocolatey rather than winget. The community repository
 ([community.chocolatey.org](https://community.chocolatey.org)) is one of the
 more rigorously gated channels: every submitted version goes through
 automated validation, a VirusTotal scan, and human moderator review before
@@ -549,7 +549,7 @@ $ErrorActionPreference = 'Stop'
 
 The `npcap` dependency pulls Npcap in as a prerequisite so live capture
 works out of the box. Live capture still requires an **Administrator**
-terminal — Chocolatey cannot grant raw-socket access.
+terminal; Chocolatey cannot grant raw-socket access.
 
 ### Per-release
 
@@ -568,7 +568,7 @@ same way the other channels are automated.
 ## Flatpak (optional)
 
 Because live packet capture requires host-level privileges, a sandboxed
-Flatpak build is of limited practical value — the app would only work with
+Flatpak build is of limited practical value. The app would only work with
 `--device=all` and specific portal permissions that most Flatpak users
 would rather not grant. If we ship a Flatpak anyway (for the demo mode
 against recorded PCAPs), it lives under
@@ -600,7 +600,7 @@ After each release, run through this list and check each channel:
 
 Downstream packaging goes stale. If a user reports `apt install seehandshake`
 giving them version 0.3 when 1.2 is current, the fix is at the packaging
-layer — not in this repo. Direct users to `cargo install seehandshake` or a
+layer, not in this repo. Direct users to `cargo install seehandshake` or a
 GitHub release binary as an immediate workaround, then chase the downstream
 package.
 

@@ -101,8 +101,8 @@ fn field(label: &'static str, value: String) -> Line<'static> {
 }
 
 /// Render the "Origin" row. Returns `None` when attribution is unresolved
-/// or the platform has no resolver — omitting a row is preferable to
-/// filling the panel with "—" placeholders.
+/// or the platform has no resolver. Omitting a row is preferable to
+/// filling the panel with dash placeholders.
 pub(crate) fn origin_line(origin: Option<&Origin>) -> Option<Vec<Line<'static>>> {
     let origin = origin?;
     match origin {

@@ -3,7 +3,7 @@
 //! Per-record timeline events for the detail view.
 //!
 //! [`RecordEvent`] is a snapshot of one TLS record as it was observed on the
-//! wire: direction, timestamp, outer type, and — where possible — a decoded
+//! wire: direction, timestamp, outer type, and, where possible, a decoded
 //! body. Records that carry a plaintext handshake message (`ClientHello`,
 //! `ServerHello`, `HelloRetryRequest`) get a fully-broken-out
 //! [`DecodedHandshake`]. Records that are AEAD-encrypted (outer type
@@ -75,12 +75,12 @@ pub enum RecordBody {
     /// An AEAD-encrypted record. In TLS 1.3 the outer type is
     /// `application_data`; the inner content type is not observable without
     /// keys. In TLS 1.2 this is also emitted for `handshake` records that
-    /// follow a `ChangeCipherSpec` in the same direction — the encrypted
+    /// follow a `ChangeCipherSpec` in the same direction. The encrypted
     /// Finished (and subsequent server tickets) fall into this bucket.
     EncryptedHandshake {
         /// Best-effort label based on the record's position in the handshake
         /// flight (e.g. "likely EncryptedExtensions + Certificate"). Always
-        /// hedged — see `docs/tls13-visibility.md`.
+        /// hedged; see `docs/tls13-visibility.md`.
         inferred_label: &'static str,
         /// The first bytes of the AEAD payload (ciphertext), for the hex
         /// dump in the detail view. Capped at 64 bytes.
@@ -98,7 +98,7 @@ pub enum RecordBody {
 pub enum DecodedHandshake {
     /// A `ClientHello` (msg_type = 1).
     ClientHello(Box<DecodedClientHello>),
-    /// A `ServerHello` (msg_type = 2) — not a `HelloRetryRequest`.
+    /// A `ServerHello` (msg_type = 2), not a `HelloRetryRequest`.
     ServerHello(Box<DecodedServerHello>),
     /// A `HelloRetryRequest`. Wire-format identical to a `ServerHello`, but
     /// its `random` field is a specific magic constant.
@@ -205,7 +205,7 @@ pub struct DecodedExtension {
     /// Raw extension body bytes (excluding the 2+2 header).
     pub raw: Vec<u8>,
     /// Decoded body, if the extension type is one of the decoders we
-    /// implement. Otherwise [`ExtensionBody::Opaque`] — the raw bytes are
+    /// implement. Otherwise [`ExtensionBody::Opaque`], and the raw bytes are
     /// still available on `raw`.
     pub body: ExtensionBody,
 }

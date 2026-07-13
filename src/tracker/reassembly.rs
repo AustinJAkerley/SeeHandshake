@@ -69,7 +69,7 @@ struct TrackedConnection {
     // AEAD-encrypted with the negotiated write key.
     client_ccs_seen: bool,
     server_ccs_seen: bool,
-    // Count of post-CCS records per direction — used to hedge labels for
+    // Count of post-CCS records per direction. Used to hedge labels for
     // TLS 1.2 encrypted Finished vs. NewSessionTicket vs. application data.
     post_ccs_records_from_client: u32,
     post_ccs_records_from_server: u32,
@@ -120,7 +120,7 @@ impl ConnectionTracker {
     ///
     /// # Errors
     ///
-    /// Currently returns `Ok(())` for all inputs — malformed data is
+    /// Currently returns `Ok(())` for all inputs. Malformed data is
     /// recorded on the per-connection [`HandshakeInfo::error`] field rather
     /// than surfaced as an error, so a single bad connection does not stop
     /// the tracker from serving others.
@@ -211,8 +211,8 @@ impl ConnectionTracker {
                 TlsRecordType::Handshake => {
                     // In TLS 1.2, a Handshake record after CCS is really an
                     // encrypted Finished (or a post-cutover message like
-                    // NewSessionTicket). Skip plaintext decode in that case
-                    // — the msg_type byte is ciphertext, and interpreting it
+                    // NewSessionTicket). Skip plaintext decode in that case:
+                    // the msg_type byte is ciphertext, and interpreting it
                     // as `Finished` etc. would be wrong. `apply_ccs` already
                     // advanced the stage when CCS was observed.
                     let post_ccs = match direction {
@@ -258,7 +258,7 @@ impl ConnectionTracker {
                     if conn.encrypted_records_from_client >= 2 {
                         conn.stop_logging = true;
                     }
-                    // TLS 1.2 application data — the handshake is already
+                    // TLS 1.2 application data. The handshake is already
                     // done by the time this record type appears from either
                     // side, so stop logging immediately.
                     if conn.client_ccs_seen && conn.server_ccs_seen {
@@ -368,7 +368,7 @@ fn build_body(record: &OwnedRecord, direction: Direction, conn: &TrackedConnecti
     }
 }
 
-/// A TLS record with owned payload — used inside the tracker to sidestep
+/// A TLS record with owned payload. Used inside the tracker to sidestep
 /// the borrow-checker conflict between the reassembly buffer and per-record
 /// state mutation.
 struct OwnedRecord {
@@ -417,8 +417,8 @@ fn encrypted_flight_label(
     conn: &TrackedConnection,
     payload_len: usize,
 ) -> &'static str {
-    // TLS 1.2 case: ApplicationData records are actual application data —
-    // they only appear after the handshake is fully complete. There is no
+    // TLS 1.2 case: ApplicationData records are actual application data.
+    // They only appear after the handshake is fully complete. There is no
     // TLS-1.3-style "encrypted handshake in application_data" or 0-RTT here,
     // so use plain labels regardless of size or position.
     let is_tls12 = matches!(
@@ -430,7 +430,7 @@ fn encrypted_flight_label(
     }
 
     // Payload length here is the AEAD ciphertext + 16-byte auth tag + the
-    // 1-byte inner content type — that's why size thresholds work:
+    // 1-byte inner content type. That's why size thresholds work:
     // Finished-only is ~40-60 B; a Certificate chain is at least ~1 KB.
     match direction {
         Direction::ServerToClient => match conn.encrypted_records_from_server {
@@ -463,7 +463,7 @@ fn encrypted_flight_label(
 }
 
 /// Label a Handshake record that arrived after a ChangeCipherSpec on the
-/// same direction — i.e. a TLS 1.2 encrypted Finished / NewSessionTicket /
+/// same direction: a TLS 1.2 encrypted Finished / NewSessionTicket /
 /// post-handshake tickets. In TLS 1.3 CCS is a no-op middlebox marker, so
 /// this labeler assumes we're on a TLS 1.2 stream.
 fn post_ccs_handshake_label(direction: Direction, conn: &TrackedConnection) -> &'static str {
@@ -614,7 +614,7 @@ fn apply_encrypted_record(
     saw_client_finished_marker: &mut bool,
     direction: Direction,
 ) {
-    // In TLS 1.2, ApplicationData records are actual application data — they
+    // In TLS 1.2, ApplicationData records are actual application data. They
     // only appear after the handshake is fully complete.  In TLS 1.3,
     // ApplicationData records also carry encrypted handshake messages
     // (EncryptedExtensions, Certificate, Finished, etc.), so we count them
@@ -638,7 +638,7 @@ fn apply_encrypted_record(
         } else {
             match *encrypted_records_from_server {
                 // Records 1-3: EncryptedExtensions, Certificate, CertificateVerify
-                // (diagram step ③ — all grouped as the server's certificate flight).
+                // (diagram step ③, all grouped as the server's certificate flight).
                 1..=3 => HandshakeStage::Certificate,
                 // Record 4+: server's Finished message (diagram step ⑤).
                 _ => HandshakeStage::ServerFinished,
@@ -708,7 +708,7 @@ mod tests {
     fn ingest_garbage_marks_errored() {
         let mut t = ConnectionTracker::new();
         // Ten bytes of a valid-looking record header claiming 500 bytes of
-        // payload — then random data, which will not parse as a handshake
+        // payload, then random data, which will not parse as a handshake
         // but will not violate the record cap either.
         let mut junk = vec![22u8, 0x03, 0x03, 0x00, 0x08];
         junk.extend_from_slice(&[0u8; 8]);
@@ -722,7 +722,7 @@ mod tests {
         // message was parsed successfully.
         assert!(matches!(state.handshake.stage, HandshakeStage::Idle));
         // A record event is still emitted so the timeline reflects what was
-        // observed — its body will decode as Unknown.
+        // observed. Its body will decode as Unknown.
         assert_eq!(state.records.len(), 1);
     }
 

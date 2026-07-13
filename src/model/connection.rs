@@ -11,7 +11,7 @@ use crate::model::record::RecordEvent;
 
 /// Maximum number of [`RecordEvent`]s retained per connection.
 ///
-/// A typical TLS 1.3 handshake produces roughly 8–12 records total; 64
+/// A typical TLS 1.3 handshake produces roughly 8 to 12 records total; 64
 /// covers HelloRetryRequest, retransmissions, and short client-side
 /// application-data leakage before the timeline stops appending.
 pub const RECORD_LOG_CAP: usize = 64;

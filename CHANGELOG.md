@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.3] — 2026-07-12
+## [1.0.3] - 2026-07-12
 
 ### Added
 - Debian (`.deb`) packages for amd64 and arm64, built by CI and attached to
@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `repository` and `homepage` metadata now point at the correct GitHub URL
   instead of a placeholder.
 
-## [1.0.2] — 2026-07-12
+## [1.0.2] - 2026-07-12
 
 ### Fixed
 - Release CI: build the `aarch64-unknown-linux-gnu` binary natively on
@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on the default mirrors, then multiarch `libc6` versions could not be
   reconciled); a native runner sidesteps all of it.
 
-## [1.0.1] — 2026-07-12
+## [1.0.1] - 2026-07-12
 
 ### Fixed
 - Release CI: aarch64 (Linux ARM64) cross-compile job failed on Ubuntu 24.04
@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   mirrors are now pinned to amd64 and arm64 packages come from
   `ports.ubuntu.com`.
 
-## [1.0.0] — 2026-07-12
+## [1.0.0] - 2026-07-12
 
 ### Added
 - Project scaffolding, license, contributor documentation.

@@ -4,7 +4,7 @@
 //!
 //! Given the raw extension body bytes and the extension type code, produce a
 //! [`ExtensionBody`] variant. Malformed bodies fall back to
-//! [`ExtensionBody::Opaque`] rather than erroring — the raw bytes remain on
+//! [`ExtensionBody::Opaque`] instead of erroring. The raw bytes stay on
 //! the [`DecodedExtension::raw`] field, so the detail view can still render
 //! them.
 

@@ -150,7 +150,7 @@ fn parse_socket_table(text: &str, out: &mut HashMap<(SocketAddr, SocketAddr), So
 /// ```
 ///
 /// Note that `tx_queue:rx_queue` and `tr:tm->when` each pack two values
-/// into a single colon-separated token — they take **one** whitespace
+/// into a single colon-separated token: they take **one** whitespace
 /// slot, not two. Getting this wrong shifts every subsequent field.
 fn parse_socket_line(line: &str) -> Option<((SocketAddr, SocketAddr), SocketRow)> {
     let mut it = line.split_ascii_whitespace();
@@ -189,7 +189,7 @@ fn parse_endpoint(s: &str) -> Option<SocketAddr> {
 }
 
 /// IPv4 in `/proc/net/tcp` is the 32-bit address written in host byte
-/// order — on little-endian systems that means the bytes appear reversed:
+/// order. On little-endian systems that means the bytes appear reversed:
 /// `0100007F` = `127.0.0.1`.
 fn parse_ipv4_hex(s: &str) -> Option<Ipv4Addr> {
     let raw = u32::from_str_radix(s, 16).ok()?;
@@ -444,7 +444,7 @@ mod tests {
         assert_eq!(r.resolve(a, b), Origin::OtherUser { uid: 0 });
     }
 
-    /// Create a unique temporary directory. Using `std` only — avoids
+    /// Create a unique temporary directory. Using `std` only, which avoids
     /// pulling in `tempfile` just for a couple of tests.
     fn tempdir() -> PathBuf {
         use std::sync::atomic::{AtomicU64, Ordering};

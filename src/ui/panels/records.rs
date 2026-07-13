@@ -159,7 +159,7 @@ fn row_line(r: &RecordEvent, first_ts: u64) -> Line<'static> {
 }
 
 /// The synthetic first row of the records list. Selecting it flips the
-/// right pane back to connection-summary metadata — the only way to
+/// right pane back to connection-summary metadata. It is the only way to
 /// return to that view without switching connections.
 fn metadata_row_line() -> Line<'static> {
     Line::from(vec![

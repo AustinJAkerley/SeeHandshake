@@ -11,9 +11,9 @@
 //! bottom rather than getting one row each.
 //!
 //! Each section carries:
-//! - `value_lines` — the decoded bytes / values;
-//! - `edu_short` — one line always shown;
-//! - `edu_details` — labeled sub-topics (Purpose / Keys involved / Where
+//! - `value_lines`: the decoded bytes / values;
+//! - `edu_short`: one line always shown;
+//! - `edu_details`: labeled sub-topics (Purpose / Keys involved / Where
 //!   the private key lives / Why it matters / ...) rendered as a small
 //!   Q&A block when the section is selected or globally expanded via `e`.
 //!
@@ -153,11 +153,11 @@ fn framing_section(r: &RecordEvent, dir: &'static str) -> Section {
 }
 
 // ---------------------------------------------------------------------------
-// ClientHello — crypto-first ordering.
+// ClientHello: crypto-first ordering.
 // ---------------------------------------------------------------------------
 
 fn push_client_hello(out: &mut Vec<Section>, ch: &DecodedClientHello, dir: &'static str) {
-    // 1. Cipher suites (AEAD + hash) — the algorithm menu.
+    // 1. Cipher suites (AEAD + hash): the algorithm menu.
     out.push(cipher_suites_offered_section(ch, dir));
 
     // 2. Crypto-relevant extensions in a fixed pedagogical order.
@@ -194,7 +194,7 @@ fn push_client_hello(out: &mut Vec<Section>, ch: &DecodedClientHello, dir: &'sta
 }
 
 // ---------------------------------------------------------------------------
-// ServerHello — same crypto-first ordering.
+// ServerHello: same crypto-first ordering.
 // ---------------------------------------------------------------------------
 
 fn push_server_hello(out: &mut Vec<Section>, sh: &DecodedServerHello, dir: &'static str) {
@@ -264,7 +264,7 @@ fn push_extension_if_present<'a, I>(
 /// Emit a key_share section with a title that distinguishes the client's
 /// list of offers from the single key the server picked. Falls back to the
 /// generic renderer if the extension body isn't decoded as a `KeyShare` (a
-/// parser quirk — the wire type still lands here).
+/// parser quirk: the wire type still lands here).
 fn push_key_share_if_present<'a, I>(
     out: &mut Vec<Section>,
     exts: I,
@@ -788,7 +788,7 @@ fn kv_line(k: &'static str, v: String) -> Line<'static> {
     ])
 }
 
-/// Like [`kv_line`] but the value renders in [`wire_style`] — use for
+/// Like [`kv_line`] but the value renders in [`wire_style`]. Use it for
 /// fields whose value is raw wire bytes (hex dumps, session_id, etc.).
 fn kv_wire_line(k: &'static str, v: String) -> Line<'static> {
     Line::from(vec![
@@ -801,7 +801,7 @@ fn raw_line(s: String) -> Line<'static> {
     Line::from(s)
 }
 
-/// Style used for anything that came directly off the wire — hex dumps,
+/// Style used for anything that came directly off the wire: hex dumps,
 /// decoded byte values, and code-point literals. Green because it visually
 /// separates "the message" from the surrounding commentary.
 fn wire_style() -> Style {
@@ -813,7 +813,7 @@ fn wire_line(s: String) -> Line<'static> {
     Line::from(Span::styled(s, wire_style()))
 }
 
-/// Bold header inside a section body — used to separate multiple offered
+/// Bold header inside a section body. Used to separate multiple offered
 /// key_shares (client) or introduce the server's single chosen entry.
 fn header_line(s: String) -> Line<'static> {
     Line::from(Span::styled(
@@ -832,12 +832,12 @@ fn header_line(s: String) -> Line<'static> {
 // much easier to read than a wall of prose.
 //
 // Crypto framing to keep consistent across sections:
-//   - "Purpose" — what problem this field solves.
-//   - "Key type" / "Keys involved" — public/private, ephemeral vs long-term,
+//   - "Purpose": what problem this field solves.
+//   - "Key type" / "Keys involved": public/private, ephemeral vs long-term,
 //     symmetric vs asymmetric.
-//   - "Where the private key lives" — always on the endpoint that generated
+//   - "Where the private key lives": always on the endpoint that generated
 //     it, never on the wire.
-//   - "Why it matters" — security property this enables (forward secrecy,
+//   - "Why it matters": security property this enables (forward secrecy,
 //     authentication, replay protection, ...).
 // ---------------------------------------------------------------------------
 
@@ -991,7 +991,7 @@ const EDU_CLIENT_RANDOM_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "TLS 1.2 legacy",
-        body: "The first 4 bytes used to be a Unix timestamp; TLS 1.3 dropped that convention — all 32 bytes are now uniform random.",
+        body: "The first 4 bytes used to be a Unix timestamp; TLS 1.3 dropped that convention, so all 32 bytes are now uniform random.",
     },
 ];
 
@@ -1019,7 +1019,7 @@ const EDU_SERVER_RANDOM_DETAILS: &[EduDetail] = &[
 // -- SNI --------------------------------------------------------------------
 
 const EDU_SNI_SHORT: &str =
-    "The hostname the client wants. Sent in the clear — the biggest metadata leak in TLS 1.3.";
+    "The hostname the client wants. Sent in the clear: the biggest metadata leak in TLS 1.3.";
 const EDU_SNI_DETAILS: &[EduDetail] = &[
     EduDetail {
         label: "Purpose",
@@ -1045,7 +1045,7 @@ const EDU_ALPN_SHORT: &str = "Which application protocols the client speaks insi
 const EDU_ALPN_DETAILS: &[EduDetail] = &[
     EduDetail {
         label: "Purpose",
-        body: "The client and server agree on what to run on top of TLS — h2, http/1.1, something custom — before any data flows.",
+        body: "The client and server agree on what to run on top of TLS (h2, http/1.1, something custom) before any data flows.",
     },
     EduDetail {
         label: "Visibility",
@@ -1110,7 +1110,7 @@ const EDU_EARLY_DATA_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "Keys involved",
-        body: "A symmetric early-traffic key derived from the resumption PSK — separate from the handshake and application traffic keys.",
+        body: "A symmetric early-traffic key derived from the resumption PSK, separate from the handshake and application traffic keys.",
     },
 ];
 
@@ -1120,7 +1120,7 @@ const EDU_COOKIE_SHORT: &str = "A stateless liveness token, echoed on the retrie
 const EDU_COOKIE_DETAILS: &[EduDetail] = &[
     EduDetail {
         label: "Purpose",
-        body: "Lets a server force a round trip before doing expensive key-exchange work — useful against amplification attacks.",
+        body: "Lets a server force a round trip before doing expensive key-exchange work. Useful against amplification attacks.",
     },
     EduDetail {
         label: "Flow",
@@ -1167,7 +1167,7 @@ fn edu_short_for_msg_type(msg_type: u8) -> &'static str {
         11 => "Server's X.509 certificate chain, proving identity to the client.",
         12 => "Server's ephemeral (EC)DH public key, signed with its long-term certificate key.",
         13 => "Server asks the client for its own certificate (mutual TLS).",
-        14 => "Server signals its flight is complete — client's turn now.",
+        14 => "Server signals its flight is complete. Client's turn now.",
         15 => "Signature over the transcript proving possession of the private key.",
         16 => "Client's contribution to the (EC)DH key exchange.",
         20 => "MAC over the whole transcript. First message under the newly derived keys.",
@@ -1205,7 +1205,7 @@ const EDU_CERTIFICATE_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "Visibility",
-        body: "Plaintext in TLS 1.2 — anyone on-path can see the certificate. TLS 1.3 encrypts it inside the handshake flight.",
+        body: "Plaintext in TLS 1.2, so anyone on-path can see the certificate. TLS 1.3 encrypts it inside the handshake flight.",
     },
     EduDetail {
         label: "Trust check",
@@ -1228,7 +1228,7 @@ const EDU_SERVER_KEY_EXCHANGE_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "TLS 1.3 change",
-        body: "TLS 1.3 dropped this message — the server's key_share goes in ServerHello, and the signature moves to CertificateVerify.",
+        body: "TLS 1.3 dropped this message. The server's key_share goes in ServerHello, and the signature moves to CertificateVerify.",
     },
 ];
 
@@ -1269,7 +1269,7 @@ const EDU_CERTIFICATE_VERIFY_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "Where the private key lives",
-        body: "On the endpoint that owns the certificate — usually an HSM, TPM, or protected key file. Never on the wire.",
+        body: "On the endpoint that owns the certificate, usually an HSM, TPM, or protected key file. Never on the wire.",
     },
 ];
 
@@ -1291,7 +1291,7 @@ const EDU_CLIENT_KEY_EXCHANGE_DETAILS: &[EduDetail] = &[
 const EDU_FINISHED_DETAILS: &[EduDetail] = &[
     EduDetail {
         label: "Purpose",
-        body: "HMAC over the full handshake transcript. Proves the sender saw the same handshake as the receiver — catches man-in-the-middle tampering.",
+        body: "HMAC over the full handshake transcript. Proves the sender saw the same handshake as the receiver, which catches man-in-the-middle tampering.",
     },
     EduDetail {
         label: "Visibility",
@@ -1321,7 +1321,7 @@ const EDU_NEW_SESSION_TICKET_DETAILS: &[EduDetail] = &[
 const EDU_CERT_STATUS_DETAILS: &[EduDetail] = &[
     EduDetail {
         label: "Purpose",
-        body: "Server-stapled OCSP response — proof from the CA (or its responder) that the certificate has not been revoked.",
+        body: "Server-stapled OCSP response: proof from the CA (or its responder) that the certificate has not been revoked.",
     },
     EduDetail {
         label: "Why staple",
@@ -1372,7 +1372,7 @@ const EDU_LEGACY_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "session_id",
-        body: "TLS 1.2 used this for stateful resumption. TLS 1.3 does resumption via pre_shared_key, so this field carries no protocol meaning — clients send a random 32 bytes purely to look like TLS 1.2 on the wire.",
+        body: "TLS 1.2 used this for stateful resumption. TLS 1.3 does resumption via pre_shared_key, so this field carries no protocol meaning. Clients send a random 32 bytes purely to look like TLS 1.2 on the wire.",
     },
     EduDetail {
         label: "compression",
@@ -1435,7 +1435,7 @@ const EDU_ENCRYPTED_CIPHERTEXT_DETAILS: &[EduDetail] = &[
     },
     EduDetail {
         label: "How to decrypt",
-        body: "You need the handshake traffic secret for this direction. It is derived inside each endpoint and never sent. A cooperating client can export it via SSLKEYLOGFILE — SeeHandshake does not yet consume that, but it is on the roadmap.",
+        body: "You need the handshake traffic secret for this direction. It is derived inside each endpoint and never sent. A cooperating client can export it via SSLKEYLOGFILE. SeeHandshake does not yet consume that, but it is on the roadmap.",
     },
     EduDetail {
         label: "Keys involved",

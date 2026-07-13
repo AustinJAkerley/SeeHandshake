@@ -159,7 +159,7 @@ pub fn render(f: &mut Frame<'_>, app: &App, area: Rect) {
         HandshakeStage::ordered()
     };
     // The Flow view's cursor is derived from the middle-pane record
-    // selection so ↑/↓ walks the same underlying list — the diagram is
+    // selection so ↑/↓ walks the same underlying list. The diagram is
     // just a graphical rendering of the record timeline.
     let cursor_stage = app.selected_record_stage();
     let cursor_idx = cursor_stage.and_then(|s| ordered.iter().position(|o| *o == s));
@@ -281,7 +281,7 @@ fn connector_line(inner_width: usize) -> Line<'static> {
 ///
 /// `is_cursor` is the user's selection cursor within the diagram (moved by
 /// arrow keys); `is_current` is the connection's actually-reached stage
-/// (from the tracker). They are usually different — for example the user
+/// (from the tracker). They are usually different. For example, the user
 /// can arrow up to inspect ClientHello even after ApplicationData has been
 /// reached.
 fn step_line(

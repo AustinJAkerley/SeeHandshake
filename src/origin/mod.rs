@@ -4,7 +4,7 @@
 //!
 //! Given the two endpoints of a TCP flow, an [`OriginResolver`] identifies
 //! the local process that owns the socket. On Linux this reads
-//! `/proc/net/tcp{,6}` + `/proc/*/fd/socket:[inode]` — the same technique
+//! `/proc/net/tcp{,6}` + `/proc/*/fd/socket:[inode]`, the same technique
 //! `ss -tp` uses. Other operating systems currently return
 //! [`Origin::Unsupported`].
 //!
@@ -56,7 +56,7 @@ pub enum Origin {
         /// UID that owns the socket.
         uid: u32,
     },
-    /// No matching socket was found — it may have already closed, or the
+    /// No matching socket was found. It may have already closed, or the
     /// flow is being observed passively without a corresponding local
     /// socket (routed traffic on a promiscuous interface).
     Unknown,
@@ -76,7 +76,7 @@ pub trait OriginResolver: Send {
 /// Construct the default resolver for the current platform.
 ///
 /// On Linux (outside of `cfg(test)`) this is a [`linux::LinuxProcResolver`].
-/// Everywhere else — and inside tests — it is [`other::NullOriginResolver`],
+/// Everywhere else, and inside tests, it is [`other::NullOriginResolver`],
 /// so the existing tracker tests do not depend on `/proc`.
 #[must_use]
 pub fn default_resolver() -> Box<dyn OriginResolver> {

@@ -193,8 +193,8 @@ fn tracker_resolves_origin_once_from_supplied_resolver() {
 
 #[test]
 fn parser_never_panics_on_random_bytes() {
-    // Fuzz-lite: feed a deterministic PRNG stream of increasing length; the
-    // parser must always return either Ok(...) or Err(_) — never panic.
+    // Fuzz-lite: feed a deterministic PRNG stream of increasing length. The
+    // parser must always return either Ok(...) or Err(_), never panic.
     let mut state: u64 = 0xDEAD_BEEF_CAFE_F00D;
     for len in 0..10_000usize {
         state = state

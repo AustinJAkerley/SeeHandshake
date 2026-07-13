@@ -63,7 +63,7 @@ animated arrows in the center panel).
 ## Data flow guarantees
 
 - The capture thread never blocks on the UI. If the parser channel fills up,
-  the capture thread drops packets and increments a counter — visible in the
+  the capture thread drops packets and increments a counter, visible in the
   UI's status line. Packet capture must not stall.
 - The parser thread never allocates unbounded memory. Reassembly buffers are
   capped per connection; oversize buffers are truncated and the connection
@@ -77,7 +77,7 @@ The MVP already has seams for future features:
 
 | Future feature | Seam already in place |
 | --- | --- |
-| PCAP file import | `PacketSource` trait — add a `PcapFileSource`. |
+| PCAP file import | `PacketSource` trait; add a `PcapFileSource`. |
 | JSON / Markdown export | `HandshakeInfo` derives `serde::Serialize`. |
 | TLS 1.2 support | `parser::handshake` dispatches on record type. |
 | SSLKEYLOGFILE decryption | Reassembly buffers hold raw ciphertext; a decryption layer can sit between reassembly and handshake parsing. |

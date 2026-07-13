@@ -2,7 +2,7 @@
 
 //! CLI-level integration tests.
 //!
-//! Live packet capture is not exercised here — that requires elevated
+//! Live packet capture is not exercised here. That needs elevated
 //! privileges and a network interface, neither of which is portable across
 //! CI environments. What we do cover:
 //!

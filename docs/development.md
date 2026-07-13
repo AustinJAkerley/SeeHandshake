@@ -32,7 +32,7 @@ warm laptop). Subsequent incremental builds finish in seconds.
 
 ## Running the test suite
 
-The full test matrix is fast — under one second on typical hardware — because
+The full test matrix is fast, under one second on typical hardware, because
 no test touches the network or requires elevated privileges.
 
 ```
@@ -41,12 +41,12 @@ cargo test
 
 That command runs, in order:
 
-1. **Unit tests** (`src/**/tests` — 19 tests): decoder edge cases,
+1. **Unit tests** (`src/**/tests`, 19 tests): decoder edge cases,
    `ConnectionKey` canonicalization, tracker eviction, cipher-suite display
    formatting.
-2. **CLI tests** (`tests/cli.rs` — 3 tests, via `assert_cmd`): `--help`,
+2. **CLI tests** (`tests/cli.rs`, 3 tests, via `assert_cmd`): `--help`,
    `--version`, and an unknown-flag failure path.
-3. **Parser integration tests** (`tests/parser_integration.rs` — 6 tests):
+3. **Parser integration tests** (`tests/parser_integration.rs`, 6 tests):
    full record → handshake → tracker pipeline against the RFC 8448
    `ClientHello` / `ServerHello` fixtures in [`tests/data/`](../tests/data/),
    plus a 10 000-iteration fuzz-lite loop that asserts the parser never
@@ -108,10 +108,10 @@ max version:    Some(Tls13)
 ## Running the live TUI
 
 Live packet capture requires elevated privileges. Pick one of the strategies
-below rather than routinely running Rust builds as root — that avoids
+below rather than routinely running Rust builds as root. That avoids
 `target/` ending up owned by root and forcing `sudo cargo clean`.
 
-### Linux — grant capabilities to the binary
+### Linux: grant capabilities to the binary
 
 ```
 cargo build
@@ -137,11 +137,11 @@ sudo setcap cap_net_raw,cap_net_admin=eip target/release/seehandshake
 Run `./target/release/seehandshake --list-interfaces` first if you need the
 interface name, and re-run the `setcap` line after every rebuild.
 
-Process attribution (the Origin row) needs no extra caps — SeeHandshake
+Process attribution (the Origin row) needs no extra caps. SeeHandshake
 walks `/proc/net/tcp` and `/proc/*/fd` as the invoking user. See
 [`attribution.md`](attribution.md) for what shows up and why.
 
-### macOS — grant BPF device access
+### macOS: grant BPF device access
 
 Either open the BPF devices to the invoking user (recommended for a dev
 loop):
@@ -157,7 +157,7 @@ or run with `sudo`:
 sudo ./target/debug/seehandshake --interface en0
 ```
 
-### Windows — run from an Administrator terminal
+### Windows: run from an Administrator terminal
 
 Install [Npcap](https://npcap.com/#download) with the "Support raw 802.11
 traffic" option unchecked (unless you know you want it). Open PowerShell as
@@ -180,9 +180,9 @@ You should see:
 
 - A new row in the **Connections** panel (left).
 - The **Handshake** panel (center) list each TLS record on the wire in
-  order — `ClientHello`, `ServerHello`, then encrypted stages.
+  order: `ClientHello`, `ServerHello`, then encrypted stages.
 - The **Metadata** panel (right) populate `SNI=example.com`, cipher, key
-  exchange group. Certificate fields will read `encrypted (TLS 1.3)` — see
+  exchange group. Certificate fields will read `encrypted (TLS 1.3)`; see
   [`tls13-visibility.md`](tls13-visibility.md) for why. Arrowing through
   records in the Handshake panel flips the right panel into a sectioned,
   educational breakdown of the selected record.
@@ -206,7 +206,7 @@ Keyboard controls:
 
 Before a release, smoke-test the live path on each OS. Linux is the primary
 development platform; macOS and Windows need a manual pass because CI only
-cross-*builds* them — it never runs a live capture.
+cross-*builds* them; it never runs a live capture.
 
 Every platform follows the same shape: **build → grant capture privilege →
 list interfaces → run → generate a handshake → verify the panels populate →
@@ -255,7 +255,7 @@ confirm the permission-denied hint fires when privileges are withheld.**
       the TUI.
 - [ ] `curl.exe https://example.com` (or a browser) adds a connection row.
 - [ ] Glyphs render in Windows Terminal (legacy `conhost` may need a font
-      change — note if so).
+      change; note if so).
 - [ ] Run from a **non-elevated** shell and confirm the Windows-specific
       Npcap/Administrator hint prints and the process exits `77`.
 - [ ] `q` exits and the console is restored (no leftover alternate screen).
@@ -263,7 +263,7 @@ confirm the permission-denied hint fires when privileges are withheld.**
 ## Troubleshooting
 
 **`rust-lld: error: unable to find library -lpcap` (Debian/Ubuntu/Pop!_OS)**
-— Recent Rust releases default to `rust-lld` on Linux, which does not
+Recent Rust releases default to `rust-lld` on Linux, which does not
 honour Debian's multi-arch library path (`/usr/lib/x86_64-linux-gnu/`) the
 way GNU `ld.bfd` does. The repo ships a
 [`.cargo/config.toml`](../.cargo/config.toml) that forces `bfd` for
@@ -275,12 +275,12 @@ delete or edit that block. To reproduce or diagnose the raw failure:
 RUSTFLAGS="" cargo build          # takes the config override away temporarily
 ```
 
-**`error: linking with cc failed` mentioning `-lpcap`** — libpcap headers or
+**`error: linking with cc failed` mentioning `-lpcap`** libpcap headers or
 library are missing. Install per the prerequisites table.
 
 **`error while loading shared libraries: libpcap.so.0.8: cannot open shared
 object file` when running the binary from a Flatpak'd editor's terminal**
-— The Freedesktop SDK runtime that VS Code / Codium / Cursor Flatpaks are
+The Freedesktop SDK runtime that VS Code / Codium / Cursor Flatpaks are
 built on does not ship libpcap. You can build inside the sandbox (headers
 are proxied through), but the resulting binary is linked against the
 sandbox's glibc and cannot dlopen the host's libpcap (that would mix two
@@ -301,15 +301,15 @@ fi
 After sourcing that, `cargo test` from the sandboxed terminal transparently
 runs on the host and finds `libpcap.so.0.8` normally.
 
-**`pcap::Error::PermissionDenied`** — the binary lacks the privilege needed
+**`pcap::Error::PermissionDenied`** the binary lacks the privilege needed
 to open a raw socket. Re-check the platform-specific steps above.
 
-**`--list-interfaces` prints nothing** — the pcap backend enumerated zero
+**`--list-interfaces` prints nothing** the pcap backend enumerated zero
 interfaces. On Linux this usually means `CAP_NET_RAW` is missing; on
 containerized environments (e.g. Flatpak, Snap, some Docker configs), raw
 sockets may be filtered entirely.
 
-**TUI renders garbled characters** — the terminal is not reporting UTF-8 or
+**TUI renders garbled characters** the terminal is not reporting UTF-8 or
 lacks the box-drawing font glyphs. Set `LANG=C.UTF-8` and use a modern
 terminal (Alacritty, WezTerm, iTerm2, Windows Terminal).
 

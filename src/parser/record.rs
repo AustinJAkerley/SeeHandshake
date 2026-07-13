@@ -6,7 +6,7 @@
 //! u16`) followed by up to `2^14` bytes of payload. [`parse_records`] peels
 //! complete records off the front of a byte slice and returns them along
 //! with the number of bytes consumed. The caller is expected to retain any
-//! trailing bytes for the next call — this is how we handle TLS records that
+//! trailing bytes for the next call. That is how we handle TLS records that
 //! span multiple TCP segments.
 
 use crate::error::{Error, Result};
@@ -68,7 +68,7 @@ pub const RECORD_HEADER_LEN: usize = 5;
 ///
 /// Returns [`Error::Parse`] if a record header advertises a payload larger
 /// than [`MAX_RECORD_PAYLOAD`]. Truncated records at the end of the buffer
-/// are *not* an error — they simply do not appear in the returned vector.
+/// are *not* an error; they just do not appear in the returned vector.
 pub fn parse_records(buf: &[u8]) -> Result<(Vec<TlsRecord<'_>>, usize)> {
     let mut records = Vec::new();
     let mut cursor = 0;

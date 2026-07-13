@@ -2,7 +2,7 @@
 
 //! TLS handshake message decoders (TLS 1.3 `ClientHello`, `ServerHello`).
 //!
-//! Powered by the [`tls_parser`] crate for the low-level wire decode.
+//! Uses the [`tls_parser`] crate for the low-level wire decode.
 //! Extraction of individual extensions (SNI, ALPN, `supported_groups`,
 //! `key_share`, `supported_versions`) is done here so that the parser owns
 //! the mapping from raw wire values to the crate's canonical [`crate::model`]
@@ -10,10 +10,10 @@
 //!
 //! Two levels of decoding are exposed:
 //!
-//! - [`decode_client_hello`] / [`decode_server_hello`] — walk the raw wire
+//! - [`decode_client_hello`] / [`decode_server_hello`] walk the raw wire
 //!   bytes and return the full structure (random, session_id, every cipher
 //!   suite, every extension with a decoded body). Used by the detail view.
-//! - [`parse_client_hello`] / [`parse_server_hello`] — return the compact
+//! - [`parse_client_hello`] / [`parse_server_hello`] return the compact
 //!   [`ClientHelloInfo`] / [`ServerHelloInfo`] summaries used by the tracker
 //!   to populate [`crate::model::HandshakeInfo`]. These are now derived from
 //!   the full-decode functions above so there is a single source of truth.
@@ -122,7 +122,7 @@ pub fn parse_server_hello(bytes: &[u8]) -> Result<ServerHelloInfo> {
 /// [`TlsClientHelloContents`].
 ///
 /// Used by the tracker when it iterates over handshake messages inside a
-/// TLS record payload — it has the parsed handshake in hand and does not
+/// TLS record payload. It has the parsed handshake in hand and does not
 /// need [`parse_client_hello`] to reparse the bytes.
 #[must_use]
 pub fn extract_client_hello(ch: &TlsClientHelloContents<'_>) -> ClientHelloInfo {

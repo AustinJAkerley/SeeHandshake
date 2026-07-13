@@ -1,7 +1,7 @@
 # Process attribution
 
 For every observed TCP flow, SeeHandshake tries to identify the local
-process that owns the socket — the same information `ss -tp` or `lsof -i`
+process that owns the socket, the same information `ss -tp` or `lsof -i`
 would show. When it succeeds, the connection panel shows the process
 name, PID, UID, and (for CLI programs) the full command line.
 
@@ -16,7 +16,7 @@ This is *not* end-to-end user-action tracing. See "Honest limits" below.
    `/proc/net/tcp` and `/proc/net/tcp6`. Only rows in state `01`
    (ESTABLISHED) are kept. That gives a map keyed on
    `(local, remote)` sockets, with an inode and UID per row.
-3. The resolver looks up the flow in both orderings —
+3. The resolver looks up the flow in both orderings:
    `(seg.src, seg.dst)` and `(seg.dst, seg.src)`. The kernel only lists
    sockets whose local side is on this host, so only one ordering
    matches.
@@ -35,19 +35,19 @@ metadata panel and in the detail-view record header.
 
 ## What you'll see
 
-- **`Local(ProcessOrigin)`** — the socket is owned by a process you can
+- **`Local(ProcessOrigin)`**: the socket is owned by a process you can
   read. UI shows `firefox (pid 12345, uid 1000)`, and for CLI programs
   the full `cmdline` line underneath (e.g. `curl https://example.com`).
-- **`OtherUser { uid }`** — the row exists in `/proc/net/tcp` but no
+- **`OtherUser { uid }`**: the row exists in `/proc/net/tcp` but no
   readable `/proc/<pid>/fd` symlink was found. Common for daemons
   running under service accounts (`systemd-resolve`, `avahi`). UI shows
   `other user (uid 193)`. Running SeeHandshake as root would upgrade
   most of these to `Local(...)`, but the tool intentionally does not
   ask for that; being honest about the limit beats silently escalating.
-- **`Unknown`** — the flow was observed but no matching socket exists.
+- **`Unknown`**: the flow was observed but no matching socket exists.
   The connection may have already closed, or the flow was routed
   through this box without a local socket (uncommon).
-- **`Unsupported`** — running on a platform without an attribution
+- **`Unsupported`**: running on a platform without an attribution
   implementation (currently anything other than Linux). The UI omits
   the row entirely.
 
@@ -76,4 +76,4 @@ There is no runtime flag. To disable attribution, run on a platform
 without a resolver, or edit
 [`src/origin/mod.rs::default_resolver`](../src/origin/mod.rs) to return
 [`NullOriginResolver`](../src/origin/other.rs). The rest of the UI
-degrades gracefully — the Origin row is simply omitted.
+degrades gracefully; the Origin row is simply omitted.

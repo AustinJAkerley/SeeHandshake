@@ -8,26 +8,26 @@
 //!
 //! **TLS 1.3** (everything after `ServerHello` is encrypted):
 //! ```text
-//! ① ClientHello    — client → server, plaintext
-//! ② ServerHello    — server → client, plaintext
-//! ③ Certificate    — server → client, encrypted (EncryptedExtensions +
+//! ① ClientHello    - client → server, plaintext
+//! ② ServerHello    - server → client, plaintext
+//! ③ Certificate    - server → client, encrypted (EncryptedExtensions +
 //!                    Certificate + CertificateVerify)
-//! ④ ClientFinished — client → server, encrypted
-//! ⑤ ServerFinished — server → client, encrypted
-//! ⑥ ApplicationData — bidirectional, encrypted
+//! ④ ClientFinished - client → server, encrypted
+//! ⑤ ServerFinished - server → client, encrypted
+//! ⑥ ApplicationData - bidirectional, encrypted
 //! ```
 //!
 //! **TLS 1.2** (certificate and key-exchange messages are plaintext):
 //! ```text
-//! ①  ClientHello      — client → server, plaintext
-//! ②  ServerHello      — server → client, plaintext
-//! ③  ServerCertificate — server → client, plaintext
-//! ④  ServerKeyExchange — server → client, plaintext (DHE/ECDHE only)
-//! ⑥  ServerHelloDone  — server → client, plaintext
-//! ⑦  ClientKeyExchange — client → server, plaintext
-//! ⑩  ClientFinished   — client → server, encrypted
-//! ⑫  ServerFinished   — server → client, encrypted
-//! ⑬  ApplicationData  — bidirectional, encrypted
+//! ①  ClientHello      - client → server, plaintext
+//! ②  ServerHello      - server → client, plaintext
+//! ③  ServerCertificate - server → client, plaintext
+//! ④  ServerKeyExchange - server → client, plaintext (DHE/ECDHE only)
+//! ⑥  ServerHelloDone  - server → client, plaintext
+//! ⑦  ClientKeyExchange - client → server, plaintext
+//! ⑩  ClientFinished   - client → server, encrypted
+//! ⑫  ServerFinished   - server → client, encrypted
+//! ⑬  ApplicationData  - bidirectional, encrypted
 //! ```
 //!
 //! Because TLS 1.3 encrypts everything after `ServerHello`, stages beyond
@@ -63,7 +63,7 @@ pub enum HandshakeStage {
     ClientHello,
     /// ② The server has sent `ServerHello` (plaintext, server → client).
     ServerHello,
-    /// ③ *TLS 1.3*: Encrypted server flight — `EncryptedExtensions`,
+    /// ③ *TLS 1.3*: Encrypted server flight: `EncryptedExtensions`,
     /// `Certificate`, and `CertificateVerify` (server → client). Opaque to
     /// a passive observer.
     Certificate,
@@ -72,7 +72,7 @@ pub enum HandshakeStage {
     /// ④ *TLS 1.2*: Plaintext server key-exchange parameters (server → client,
     /// DHE/ECDHE only).
     ServerKeyExchange,
-    /// ⑥ *TLS 1.2*: `ServerHelloDone` — server signals the end of its
+    /// ⑥ *TLS 1.2*: `ServerHelloDone`. The server signals the end of its
     /// plaintext flight (server → client).
     ServerHelloDone,
     /// ⑦ *TLS 1.2*: Plaintext client key-exchange message (client → server).
@@ -83,7 +83,7 @@ pub enum HandshakeStage {
     /// ⑤/⑫ The server has sent its encrypted `Finished` message
     /// (server → client). Step ⑤ in TLS 1.3, ⑫ in TLS 1.2.
     ServerFinished,
-    /// ⑥/⑬ Application data is flowing — the handshake is complete
+    /// ⑥/⑬ Application data is flowing and the handshake is complete
     /// (bidirectional, encrypted). Step ⑥ in TLS 1.3, ⑬ in TLS 1.2.
     ApplicationData,
     /// The connection saw a fatal condition (bad record, connection reset,

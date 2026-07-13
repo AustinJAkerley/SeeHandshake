@@ -104,7 +104,7 @@ pub fn permission_denied_hint() -> &'static str {
     {
         "hint: live capture needs raw-socket privileges. Grant them once with:\n  \
          sudo setcap cap_net_raw,cap_net_admin=eip $(command -v seehandshake)\n\
-         then re-run. Re-apply setcap after every upgrade — capabilities live on \
+         then re-run. Re-apply setcap after every upgrade, since capabilities live on \
          the inode and are cleared when the binary is replaced."
     }
     #[cfg(target_os = "macos")]

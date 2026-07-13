@@ -16,7 +16,7 @@ pub const fn explain(stage: HandshakeStage) -> &'static str {
         HandshakeStage::ClientHello => concat!(
             "The client opens the handshake in the clear. It advertises the TLS versions it supports, ",
             "the cipher suites it will accept, the named groups (elliptic curves) it can use for key ",
-            "exchange, and — via extensions — a Server Name Indication (SNI), an Application-Layer ",
+            "exchange, and, via extensions, a Server Name Indication (SNI), an Application-Layer ",
             "Protocol Negotiation (ALPN) list, and one or more key-share public keys.",
         ),
         HandshakeStage::ServerHello => concat!(
@@ -53,13 +53,13 @@ pub const fn explain(stage: HandshakeStage) -> &'static str {
             "share). Both sides can now independently derive the master secret and session keys.",
         ),
         HandshakeStage::ClientFinished => concat!(
-            "The client sends its encrypted Finished message — an HMAC over the entire handshake ",
+            "The client sends its encrypted Finished message, an HMAC over the entire handshake ",
             "transcript, keyed with a secret derived from the handshake key schedule. This confirms ",
             "that the client received and authenticated the server's messages, and prevents downgrade ",
             "and tampering attacks on the negotiation.",
         ),
         HandshakeStage::ServerFinished => concat!(
-            "The server sends its encrypted Finished message — an HMAC over the handshake transcript ",
+            "The server sends its encrypted Finished message, an HMAC over the handshake transcript ",
             "analogous to the client's. Once both Finished messages have been exchanged and verified, ",
             "both sides derive the application-traffic keys and the handshake is complete.",
         ),

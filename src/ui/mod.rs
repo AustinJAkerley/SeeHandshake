@@ -2,9 +2,9 @@
 
 //! Terminal user interface (Ratatui + crossterm).
 //!
-//! The UI is organized as a three-panel layout — connections on the left,
-//! animated handshake flow in the center, negotiated metadata on the
-//! right — driven by an [`app::App`] state machine that receives updates
+//! The UI is organized as a three-panel layout: connections on the left,
+//! animated handshake flow in the center, and negotiated metadata on the
+//! right. An [`app::App`] state machine drives it, receiving updates
 //! from the parser/tracker thread via an `mpsc::Receiver`.
 
 pub mod app;
@@ -132,7 +132,7 @@ pub fn run_live(args: &Args) -> Result<()> {
                     Ok(None) => {}
                     Err(e) => tracing::warn!("tracker: {e}"),
                 }
-                // Periodic eviction — cheap; runs every batch.
+                // Periodic eviction. Cheap; runs every batch.
                 let removed = tracker.evict_stale(now);
                 if removed > 0 {
                     let _ = tracker_ui_tx.send(UiEvent::StaleEvicted(removed));
