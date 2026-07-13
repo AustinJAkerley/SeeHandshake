@@ -43,3 +43,23 @@ predicates = "3"
 lto = "thin"
 codegen-units = 1
 strip = "symbols"
+
+[package.metadata.deb]
+section = "net"
+priority = "optional"
+maintainer = "Austin Akerley <austin.akerley+SeeHandshake@outlook.com>"
+# `$auto` lets cargo-deb resolve shared-library deps (libpcap, libc) via
+# dpkg-shlibdeps against the built binary, which picks the right package name
+# across releases (e.g. libpcap0.8 vs the time64 libpcap0.8t64 on newer Ubuntu).
+depends = "$auto"
+extended-description = """\
+seehandshake is a passive TLS handshake observer for the terminal. \
+It captures packets on a chosen network interface, reassembles TLS \
+records off the TCP stream, and renders each connection in a three-panel \
+Ratatui interface with an optional educational overlay."""
+assets = [
+    ["target/release/seehandshake", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/seehandshake/README", "644"],
+    ["LICENSE", "usr/share/doc/seehandshake/copyright", "644"],
+    ["CHANGELOG.md", "usr/share/doc/seehandshake/changelog", "644"],
+]

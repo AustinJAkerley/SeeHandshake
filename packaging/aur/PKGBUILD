@@ -1,0 +1,38 @@
+# Maintainer: Austin Akerley <austin.akerley@outlook.com>
+pkgname=seehandshake
+pkgver=1.0.2
+pkgrel=1
+pkgdesc="Visualize TLS handshakes in your terminal, in real time"
+arch=('x86_64' 'aarch64')
+url="https://github.com/AustinJAkerley/SeeHandshake"
+license=('MIT')
+depends=('libpcap')
+makedepends=('cargo')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('fde20d9b99f77ef949d56c4fca92d1bac872d45161660ce93efd91995cfa04c8')
+
+prepare() {
+    cd "SeeHandshake-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+    cd "SeeHandshake-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --frozen --release --all-features
+}
+
+check() {
+    cd "SeeHandshake-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo test --frozen --all-features
+}
+
+package() {
+    cd "SeeHandshake-$pkgver"
+    install -Dm755 "target/release/$pkgname" "$pkgdir/usr/bin/$pkgname"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}
