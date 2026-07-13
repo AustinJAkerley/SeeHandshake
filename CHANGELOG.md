@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] — 2026-07-12
+
+### Added
+- Debian (`.deb`) packages for amd64 and arm64, built by CI and attached to
+  every GitHub release automatically.
+- Packaging scaffolding: an AUR `PKGBUILD`/`.SRCINFO` and `cargo-deb` metadata
+  (`[package.metadata.deb]`) with a proper maintainer field.
+
+### Fixed
+- `repository` and `homepage` metadata now point at the correct GitHub URL
+  instead of a placeholder.
+
 ## [1.0.2] — 2026-07-12
 
 ### Fixed
@@ -47,7 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release automation for Linux x86_64, Linux ARM64, macOS Intel, macOS Apple
   Silicon, and Windows x64.
 
-[Unreleased]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/AustinJAkerley/SeeHandshake/releases/tag/v1.0.0
