@@ -38,7 +38,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
           - target: x86_64-apple-darwin
             os: macos-latest
           - target: aarch64-apple-darwin
@@ -53,26 +53,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpcap-dev
-
-      - name: Install cross-compile deps for aarch64 (Linux)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          set -eux
-          sudo dpkg --add-architecture arm64
-          # Restrict the default Ubuntu mirrors to amd64 so apt does not try to
-          # fetch arm64 indexes from them (they only serve amd64/i386 and 404
-          # on arm64). Ubuntu 24.04 runners use the deb822 `ubuntu.sources`
-          # file; older images use the single-line `sources.list`.
-          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
-            sudo sed -i '/^Types:/a Architectures: amd64' /etc/apt/sources.list.d/ubuntu.sources
-          else
-            sudo sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
-          fi
-          # arm64 packages come from ports.ubuntu.com, not the default mirror.
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -sc) main universe" | \
-            sudo tee /etc/apt/sources.list.d/arm64.list
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu libpcap0.8-dev:arm64
 
       - name: Install Npcap SDK (Windows)
         if: runner.os == 'Windows'

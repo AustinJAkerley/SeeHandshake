@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-07-12
+
+### Fixed
+- Release CI: build the `aarch64-unknown-linux-gnu` binary natively on
+  GitHub's `ubuntu-24.04-arm` runner instead of cross-compiling from an amd64
+  host. The cross-compile approach kept failing in CI (arm64 apt indexes 404ed
+  on the default mirrors, then multiarch `libc6` versions could not be
+  reconciled); a native runner sidesteps all of it.
+
 ## [1.0.1] — 2026-07-12
 
 ### Fixed
@@ -38,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release automation for Linux x86_64, Linux ARM64, macOS Intel, macOS Apple
   Silicon, and Windows x64.
 
-[Unreleased]: https://github.com/OWNER/SeeHandshake/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/OWNER/SeeHandshake/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/OWNER/SeeHandshake/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/OWNER/SeeHandshake/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/OWNER/SeeHandshake/releases/tag/v1.0.0
