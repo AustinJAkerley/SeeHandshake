@@ -1,0 +1,3 @@
+# Rustfmt configuration.
+# Defaults are intentional — this file exists to signal that the project
+# runs `cargo fmt` and to allow future overrides in a single place.

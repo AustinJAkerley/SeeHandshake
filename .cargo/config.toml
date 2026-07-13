@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+#
+# Project-scoped Cargo config.
+#
+# The Linux entry below forces the GNU `bfd` linker on x86_64 hosts, which
+# works around a rust-lld linker failure on Debian-family distros where
+# `-lpcap` cannot be resolved from the multi-arch library path
+# (`/usr/lib/x86_64-linux-gnu/`) even though `libpcap-dev` is installed.
+#
+# If your platform is happy with the default linker (mold, lld, or a
+# non-Debian ld), delete or comment out the block — it is only present to
+# keep first-time `cargo build` working on Debian, Ubuntu, and Pop!_OS.
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=bfd"]
