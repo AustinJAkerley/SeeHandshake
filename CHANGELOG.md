@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-07-13
+
+### Fixed
+- Release artifacts now report the correct version. The v1.0.4 tag was placed
+  on a commit made before the version bump, so its binaries and `.deb`
+  packages were built as 1.0.3. This release is tagged on the bump commit so
+  every artifact reports 1.0.5.
+
 ## [1.0.4] - 2026-07-13
 
 ### Changed
@@ -65,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release automation for Linux x86_64, Linux ARM64, macOS Intel, macOS Apple
   Silicon, and Windows x64.
 
-[Unreleased]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.1...v1.0.2

@@ -58,9 +58,46 @@ explanation. Support for `SSLKEYLOGFILE`-based decryption and for TLS 1.2
 
 ## Install
 
-### From source (Cargo)
+Live capture needs elevated privileges on every platform. After installing,
+see [Permissions](#permissions) for the one extra step.
+
+### crates.io (any platform with Rust)
 
 ```
+cargo install seehandshake
+```
+
+### Debian / Ubuntu 24.04+ or Debian 13+ (prebuilt `.deb`)
+
+Download the `.deb` for your architecture from the
+[latest release](https://github.com/AustinJAkerley/SeeHandshake/releases/latest),
+then let apt pull in the dependencies:
+
+```
+sudo apt install ./seehandshake_*_amd64.deb      # or _arm64.deb on ARM
+```
+
+Older distros (Ubuntu 22.04 and earlier) ship `libpcap0.8` rather than the
+time64 build the `.deb` expects. Use `cargo install seehandshake` there
+instead.
+
+### macOS and Windows (prebuilt binaries)
+
+Grab the archive for your platform from the
+[latest release](https://github.com/AustinJAkerley/SeeHandshake/releases/latest)
+and extract the `seehandshake` binary:
+
+- macOS (Intel or Apple Silicon): no runtime to install; `libpcap` ships with
+  the system. If Gatekeeper blocks the binary, run
+  `xattr -d com.apple.quarantine ./seehandshake`.
+- Windows: install [Npcap](https://npcap.com/#download) first, then run from an
+  Administrator terminal.
+
+### From source
+
+```
+git clone https://github.com/AustinJAkerley/SeeHandshake.git
+cd SeeHandshake
 cargo install --path .
 ```
 
@@ -73,15 +110,10 @@ Requires:
   - macOS: preinstalled with the system; no action needed
   - Windows: install the [Npcap SDK](https://npcap.com/#download)
 
-### From apt (planned)
+### Package managers (in progress)
 
-The project is being designed with eventual submission to the Debian
-repositories in mind; once accepted this will become `sudo apt install
-seehandshake`.
-
-### From Homebrew (planned)
-
-A tap will be published once the release process stabilizes.
+A Homebrew tap, an AUR package, and eventual submission to the official Debian
+archive (`sudo apt install seehandshake`) are planned.
 
 ## Permissions
 
