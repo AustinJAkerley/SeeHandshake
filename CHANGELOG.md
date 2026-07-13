@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-07-13
+
+### Changed
+- Reworded comments, docstrings, and documentation in a plainer, more direct
+  voice.
+
 ## [1.0.3] - 2026-07-12
 
 ### Added
@@ -59,7 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release automation for Linux x86_64, Linux ARM64, macOS Intel, macOS Apple
   Silicon, and Windows x64.
 
-[Unreleased]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/AustinJAkerley/SeeHandshake/compare/v1.0.0...v1.0.1
